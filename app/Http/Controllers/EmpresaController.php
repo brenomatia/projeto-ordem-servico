@@ -21,6 +21,8 @@ use App\Models\CarrinhoProdutos;
 use App\Models\VendasProdutos;
 use App\Models\RelatorioProdutos;
 use App\Models\VendasOrdem;
+use App\Models\GarantiaCliente;
+use App\Models\GarantiaItens;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -292,9 +294,15 @@ class EmpresaController extends Controller
             $porcentagens[$tipoPagamento] = ($count / $totalPagamentos) * 100;
         }
 
-        // Obter os dados do modelo
-        $vendasOrdemValor = VendasOrdem::where('created_at', '>=', Carbon::now()->startOfMonth())->sum('valorPago');
+
+        // Obter os dados do modelo para VendasOrdem agrupados por tipo
+        $vendasOrdemValor = VendasOrdem::where('created_at', '>=', Carbon::now()->startOfMonth())
+        ->groupBy('tipo')
+        ->selectRaw('tipo, SUM(valorPago) as total')
+        ->pluck('total', 'tipo');
         $transactionsProdutosValor = TransactionsProdutos::where('created_at', '>=', Carbon::now()->startOfMonth())->sum('valorPago');
+
+        //dd($vendasOrdemValor, $transactionsProdutosValor);
 
         $sumOrdem = OrdemServico::where('created_at', '>=', Carbon::now()->startOfMonth())->where('status', 'ABERTA')->count();
 
@@ -364,8 +372,9 @@ class EmpresaController extends Controller
         }
 
         $clientes = Cliente::paginate(10);
+        $ordemServicos = OrdemServico::paginate(10);
 
-        return view('empresa.dashboard_cadastro_cliente', compact('empresa', 'clientes'));
+        return view('empresa.dashboard_cadastro_cliente', compact('empresa', 'clientes', 'ordemServicos'));
     }
 
     public function dashboard_ordem_servico(Request $request, $empresa)
@@ -967,7 +976,9 @@ class EmpresaController extends Controller
             // Mantém todos os parâmetros de consulta na paginação
             $clientes->appends($request->query());
 
-            return view('empresa.dashboard_cadastro_cliente_pesquisa', compact('empresa', 'clientes'));
+            $ordemServicos = OrdemServico::paginate(10);
+
+            return view('empresa.dashboard_cadastro_cliente_pesquisa', compact('empresa', 'clientes', 'ordemServicos'));
         }
 
     }
@@ -1115,6 +1126,12 @@ class EmpresaController extends Controller
 
         if (!$request->user()) {
             return redirect("/empresa/$empresa->name")->with('error', 'Você precisa fazer login para acessar essa página.');
+        }
+
+        $consulta = Produto::where('sku', $request->produto_sku)->first();
+
+        if($consulta){
+            return back()->with('error', 'Produto ja cadastrado!');
         }
 
         $produto = new Produto();
@@ -1334,6 +1351,7 @@ class EmpresaController extends Controller
         $cliente = Cliente::find($request->cliente_id);
         $newOrdemServico = new OrdemServico();
         $newOrdemServico->nome_cliente = $cliente->nome_completo;
+        $newOrdemServico->tipo = $request->tipo_filter;
         $newOrdemServico->id_cliente = $request->cliente_id;
         $newOrdemServico->abertura_da_ordem = Auth::user()->name;
         $newOrdemServico->status = "ABERTA";
@@ -2377,7 +2395,12 @@ class EmpresaController extends Controller
 
         $revendas = Revenda::all();
 
-        return view('empresa.dashboard_empresa_vendas', compact('empresa', 'vendasOrdem', 'sumTotalOrdem', 'vendasProdutos', 'sumTotalProdutos', 'revendas'));
+        $vendas = VendasProdutos::where('id_user', Auth::user()->id)
+        ->latest()  // Ordena os registros pela coluna 'created_at' em ordem decrescente
+        ->limit(10) // Limita o resultado a 10 registros
+        ->get();    // Obtém os registros
+
+        return view('empresa.dashboard_empresa_vendas', compact('empresa', 'vendasOrdem', 'sumTotalOrdem', 'vendasProdutos', 'sumTotalProdutos', 'revendas', 'vendas'));
     }
 
     public function dashboard_vendas_busca_os(Request $request, $empresa)
@@ -2629,8 +2652,15 @@ class EmpresaController extends Controller
         }
 
         $valor_pago = $request->desconto_aplicadoProdutos;
-        $desconto = $request->descontoProdutos;
-        $tipo_pagamento = $request->tipo_pagamentoProdutos;
+
+        if($request->tipo_pagamentoProdutos == "REVENDA"){
+            $tipo_pagamento = $request->meio_pagamentoProdutos;
+            $desconto = "REVENDA";
+        }else{
+            $tipo_pagamento = $request->tipo_pagamentoProdutos;
+            $desconto = $request->descontoProdutos;
+        }
+
         $parcelas = $request->parcelasProdutos;
         $id_revenda = $request->id_revendaProdutos;
 
@@ -2784,6 +2814,8 @@ class EmpresaController extends Controller
         $parcelas = $request->input('parcelas');
         $tipo_pagamento = $request->input('tipo_pagamento');
 
+        $consultaOS = OrdemServico::find($cod_os);
+
         $newOrdem = new VendasOrdem();
         $newOrdem->id_user = Auth::user()->id;
         $newOrdem->cod_os = $cod_os;
@@ -2793,6 +2825,7 @@ class EmpresaController extends Controller
         $newOrdem->valorPago = $valor_pago;
         $newOrdem->parcelas = $parcelas;
         $newOrdem->tipo_pagamento = $tipo_pagamento;
+        $newOrdem->tipo = $consultaOS->tipo;
         $newOrdem->save();
 
         CarrinhoOrdem::where('id_user', Auth::user()->id)->delete();
@@ -2829,6 +2862,17 @@ class EmpresaController extends Controller
         // Obtenha as datas de início e fim do formulário
         $start_date = Carbon::createFromFormat('Y-m-d', $request->input('start_date'))->startOfDay();
         $end_date = Carbon::createFromFormat('Y-m-d', $request->input('end_date'))->endOfDay();
+        
+        // Obter os dados do modelo para VendasOrdem agrupados por tipo
+        $vendasOrdemValor = VendasOrdem::where('created_at', '>=', $start_date)
+            ->where('created_at', '<=', $end_date)
+            ->groupBy('tipo')
+            ->selectRaw('tipo, SUM(valorPago) as total')
+            ->pluck('total', 'tipo');
+
+        $transactionsProdutosValor = TransactionsProdutos::where('created_at', '>=', $start_date)
+            ->where('created_at', '<=', $end_date)
+            ->sum('valorPago');
 
         // Obter os dados do modelo dentro do intervalo de datas fornecido
         $vendasOrdemsGraficodonut1 = VendasOrdem::whereDate('created_at', '>=', $start_date)
@@ -2927,12 +2971,6 @@ class EmpresaController extends Controller
             $porcentagens[$tipoPagamento] = ($count / $totalPagamentos) * 100;
         }
 
- 
-
-        // Obter os dados do modelo
-        $vendasOrdemValor = VendasOrdem::where('created_at', '>=', Carbon::now()->startOfMonth())->sum('valorPago');
-        $transactionsProdutosValor = TransactionsProdutos::where('created_at', '>=', Carbon::now()->startOfMonth())->sum('valorPago');
-
         return view('empresa.dashboard_pesquisa', compact(
             'empresa', 
             'sumMensal', 
@@ -2980,6 +3018,157 @@ class EmpresaController extends Controller
 
 
         return view('empresa.dashboard_ordem_de_servico_pdf', compact('empresa', 'ordem', 'itens', 'id_ordem'));
+
+    }
+
+    public function dashboard_ordem_atualizar_status_nao_autorizado(Request $request, $empresa, $id_ordem, $id)
+    {
+        // Busca o registro da empresa na tabela "companies" pelo nome informado na rota.
+        $empresa = Company::where('name', $empresa)->firstOrFail();
+        // Cria uma nova conexão com o banco de dados da empresa.
+        Config::set('database.connections.empresa', [
+            'driver' => 'mysql',
+            'host' => $empresa->database_host,
+            'port' => $empresa->database_port,
+            'database' => $empresa->database_name,
+            'username' => $empresa->database_username,
+            'password' => $empresa->database_password,
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ]);
+        // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
+        DB::setDefaultConnection('empresa');
+
+        if (!$request->user()) {
+            return redirect("/empresa/$empresa->name")->with('error', 'Você precisa fazer login para acessar essa página.');
+        }
+
+        $new = EquipamentoOS::find($id);
+        $new->os_nao_autorizada_obs = $request->os_nao_autorizada_obs;
+        $new->save();
+
+        if ($new) {
+            return back()->with('success', 'Dados atualizados com sucesso!');
+        }
+    }
+
+    public function dashboard_vendas_detalhes_excluir_venda(Request $request, $empresa, $hash)
+    {
+        // Busca o registro da empresa na tabela "companies" pelo nome informado na rota.
+        $empresa = Company::where('name', $empresa)->firstOrFail();
+        // Cria uma nova conexão com o banco de dados da empresa.
+        Config::set('database.connections.empresa', [
+            'driver' => 'mysql',
+            'host' => $empresa->database_host,
+            'port' => $empresa->database_port,
+            'database' => $empresa->database_name,
+            'username' => $empresa->database_username,
+            'password' => $empresa->database_password,
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ]);
+        // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
+        DB::setDefaultConnection('empresa');
+
+        if (!$request->user()) {
+            return redirect("/empresa/$empresa->name")->with('error', 'Você precisa fazer login para acessar essa página.');
+        }
+
+        foreach ($request->cod_produto as $index => $codigoProduto) {
+
+            $produto = Produto::where('sku', $codigoProduto)->first();
+        
+            if ($produto) {
+                // Encontra o registro correspondente na tabela RelatorioProdutos
+                $relatorioProduto = RelatorioProdutos::where('cod_produto', $codigoProduto)->first();
+                
+                if ($relatorioProduto) {
+                    // Atualiza a quantidade e o valor total
+                    $relatorioProduto->qtd_produto -= $request->qtd_produto[$index];
+                    $relatorioProduto->valorTotal -= $produto->pvenda * $request->qtd_produto[$index];
+                    $relatorioProduto->save();
+                }
+            }
+
+        }
+
+        $delete1 = VendasProdutos::where('hash_transaction', $hash)->delete();
+        $delete2 = TransactionsProdutos::where('hash_transaction', $hash)->delete();
+
+        if ($delete1 && $delete2) {
+            return back()->with('success', 'Venda excluida com sucesso!');
+        }
+
+    }
+
+    public function dashboard_dados_garantia(Request $request, $empresa, $hash)
+    {
+        // Busca o registro da empresa na tabela "companies" pelo nome informado na rota.
+        $empresa = Company::where('name', $empresa)->firstOrFail();
+        // Cria uma nova conexão com o banco de dados da empresa.
+        Config::set('database.connections.empresa', [
+            'driver' => 'mysql',
+            'host' => $empresa->database_host,
+            'port' => $empresa->database_port,
+            'database' => $empresa->database_name,
+            'username' => $empresa->database_username,
+            'password' => $empresa->database_password,
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ]);
+        // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
+        DB::setDefaultConnection('empresa');
+
+        if (!$request->user()) {
+            return redirect("/empresa/$empresa->name")->with('error', 'Você precisa fazer login para acessar essa página.');
+        }
+
+        $verificar = GarantiaCliente::where('hash', $hash)->first();
+
+        if($verificar){
+
+            return back()->with('error', 'Garantia já cadastrada para esta venda!');
+
+        }
+
+        $new = new GarantiaCliente();
+        $new->vendedor = Auth::user()->name;
+        $new->hash = $hash;
+        $new->clienteNome = $request->clienteNome;
+        $new->clienteCEP = $request->clienteCEP;
+        $new->clienteCelular = $request->clienteCelular;
+        $new->clienteEndereco = $request->clienteEndereco;
+        $new->clienteN = $request->clienteN;
+        $new->inicioGarantia = $request->inicioGarantia;
+        $new->fimGarantia = $request->fimGarantia;
+        $new->save();
+
+        // Salvar os itens e quantidades
+        foreach ($request->list_produto as $key => $produto) {
+
+            $consulta = Produto::where('sku', $produto)->first();
+
+            $garantiaItem = new GarantiaItens();
+            $garantiaItem->item = $consulta->sku;
+            $garantiaItem->qtd = $request->qtd_produto[$key];
+            $garantiaItem->valor =  $consulta->pvenda;
+            $garantiaItem->vendedor = Auth::user()->name;
+            $garantiaItem->hash =  $hash;
+            $garantiaItem->save();
+        }
+
+        if ($new) {
+            return back()->with('success', 'Garantia lançada com sucesso!');
+        }
 
     }
 }

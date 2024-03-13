@@ -20,5 +20,6 @@ class VendasOrdem extends Model
         'valorTotal',
         'valorPago',
         'tipo_pagamento',
+        'tipo',
     ];
 }

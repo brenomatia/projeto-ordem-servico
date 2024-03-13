@@ -280,43 +280,75 @@
             });
         });
     </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var vendasOrdem = {!! $vendasOrdemValor !!};
-            var transactionsProdutos = {!! $transactionsProdutosValor !!};
 
-            var ctx2 = document.getElementById('donutChart2').getContext('2d');
-            var chart2 = new Chart(ctx2, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Vendas Ordens', 'Transactions Produtos'],
-                    datasets: [{
-                        data: [vendasOrdem, transactionsProdutos],
-                        backgroundColor: [
-                            'rgba(255, 99, 132, 0.7)', // Vermelho
-                            'rgba(54, 162, 235, 0.7)', // Azul
-                        ],
-                        borderWidth: 0,
-                    }]
+
+
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var vendasOrdem = {!! json_encode($vendasOrdemValor->toArray()) !!};
+        var transactionsProdutos = {!! $transactionsProdutosValor !!};
+
+        // Convertendo os dados em arrays para processamento no gráfico
+        var vendasOrdemTipos = Object.keys(vendasOrdem);
+        var vendasOrdemValores = Object.values(vendasOrdem).map(function(value) {
+            return parseFloat(value); // Convertendo para número decimal
+        });
+
+        var ctx2 = document.getElementById('donutChart2').getContext('2d');
+        var chart2 = new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: vendasOrdemTipos.concat('PRODUTOS'),
+                datasets: [{
+                    data: vendasOrdemValores.concat(transactionsProdutos),
+                    backgroundColor: [
+                        'rgba(125, 217, 255, 0.7)', // Azul claro para transações de produtos
+                        'rgba(255, 99, 132, 0.7)', // Vermelho para vendas de ordens
+                        'rgba(255, 206, 86, 0.7)', // Amarelo para transações de produtos
+                        'rgba(125, 217, 255, 0.7)', // Azul claro para transações de produtos
+                    ],
+                    borderWidth: 0,
+                }]
+            },
+            options: {
+                responsive: true,
+                legend: {
+                    position: 'right'
                 },
-                options: {
-                    responsive: true,
-                    legend: {
-                        position: 'right'
-                    },
-                    cutoutPercentage: 70,
-                    tooltips: {
-                        callbacks: {
-                            label: function(tooltipItem, data) {
-                                var datasetLabel = data.labels[tooltipItem.index];
-                                var value = data.datasets[0].data[tooltipItem.index];
+                cutoutPercentage: 70,
+                tooltips: {
+                    callbacks: {
+                        label: function(tooltipItem, data) {
+                            var datasetIndex = tooltipItem.datasetIndex;
+                            var dataIndex = tooltipItem.index;
+
+                            if (datasetIndex === 0) {
+                                var valorLabel = vendasOrdemTipos[dataIndex];
+                                if (valorLabel === undefined) {
+                                    return 'PRODUTOS' + ': R$ ' + data.datasets[datasetIndex].data[dataIndex].toFixed(2);
+                                } else {
+                                    return valorLabel + ': R$ ' + data.datasets[datasetIndex].data[dataIndex].toFixed(2);
+                                }
+                            } else {
+                                var datasetLabel = data.labels[datasetIndex];
+                                var value = data.datasets[datasetIndex].data[dataIndex];
                                 return datasetLabel + ': R$ ' + value.toFixed(2);
                             }
                         }
                     }
                 }
-            });
+            }
         });
-    </script>
+    });
+</script>
+
+
+
+
+
+
 
 @endsection

@@ -145,11 +145,11 @@
             <div id="collapse{{ $ordemServicos->id }}"
                 class="collapse {{ Session::get('openCardId') == $ordemServicos->id ? 'show' : '' }}">
                 <div class="card-body">
-
+                    <a href="{{ URL::route('dashboard_gerador_pdf_route', ['empresa'=>$empresa->name, 'id_ordem'=>$ordemServicos->id]) }}" target="_Blank"><button class="btn bg-purple mb-3"><i class="fa-solid fa-file-pdf mr-2"></i>ANALISAR PDF</button></a>
                     <div class="table-responsive">
                         <div class="card">
                             <div class="card-body">
-                                <a href="{{ URL::route('dashboard_gerador_pdf_route', ['empresa'=>$empresa->name, 'id_ordem'=>$ordem->id]) }}"><button class="btn bg-purple mb-3"><i class="fa-solid fa-file-pdf mr-2"></i>VISUALIZAR PDF</button></a>
+
                                 <div class="row">
                                     <div class="col-lg-3 col-6">
                                         <div class="small-box bg-info">
@@ -762,6 +762,8 @@
                 class="collapse {{ Session::get('openCardId') == $ordemServicos->id ? 'show' : '' }}">
                 <div class="card-body">
 
+                    <a href="{{ URL::route('dashboard_gerador_pdf_route', ['empresa'=>$empresa->name, 'id_ordem'=>$ordemServicos->id]) }}" target="_Blank"><button class="btn bg-purple mb-3"><i class="fa-solid fa-file-pdf mr-2"></i>ANALISAR PDF</button></a>
+                    
                     <div class="table-responsive">
                         <div class="card">
                             <div class="card-body">

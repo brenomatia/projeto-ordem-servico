@@ -73,6 +73,7 @@ Route::middleware('empresas')->group(function () {
     Route::post('/empresa/{empresa}/ordem/atualizar/{id_ordem}/equipamento/{id}', [EmpresaController::class, 'dashboard_ordem_atualizar_equipamento'])->name('dashboard_ordem_atualizar_equipamento');
     Route::post('/empresa/{empresa}/ordem/atualizar/{id_ordem}/equipamento/{id}/garantia', [EmpresaController::class, 'dashboard_ordem_atualizar_garantia_equipamento'])->name('dashboard_ordem_atualizar_garantia_equipamento');
     Route::post('/empresa/{empresa}/ordem/atualizar/{id_ordem}/equipamento/{id}/dados_status', [EmpresaController::class, 'dashboard_ordem_atualizar_dados_status'])->name('dashboard_ordem_atualizar_dados_status');
+    Route::post('/empresa/{empresa}/ordem/atualizar/{id_ordem}/equipamento/{id}/nao_autorizado', [EmpresaController::class, 'dashboard_ordem_atualizar_status_nao_autorizado'])->name('dashboard_ordem_atualizar_status_nao_autorizado');
     Route::get('/empresa/{empresa}/ordem/listagem/{id_ordem}/equipamento/{id_equipamento}', [EmpresaController::class, 'dashboard_listar_items_ordem'])->name('dashboard_listar_items_ordem');
     Route::get('/empresa/{empresa}/ordem/listagem/{id_ordem}/buscar_produto', [EmpresaController::class, 'dashboard_ordem_buscar_produto'])->name('dashboard_ordem_buscar_produto');
     Route::post('/empresa/{empresa}/ordem/listagem/{id_ordem}/buscar_produto/listar_item', [EmpresaController::class, 'dashboard_os_listar_item'])->name('dashboard_os_listar_item');
@@ -99,6 +100,9 @@ Route::middleware('empresas')->group(function () {
     Route::post('/empresa/{empresa}/vendas/request_vendas', [EmpresaController::class, 'dashboard_vendas_request_modal_produtos'])->name('dashboard_vendas_request_modal_produtos');
     Route::post('/empresa/{empresa}/vendas/concluidas_produtos', [EmpresaController::class, 'dashboard_vendas_request_produtos_concluidas'])->name('dashboard_vendas_request_produtos_concluidas');
     Route::post('/empresa/{empresa}/vendas/concluidas_ordem', [EmpresaController::class, 'dashboard_vendas_request_ordem_concluidas'])->name('dashboard_vendas_request_ordem_concluidas');
+    Route::post('/empresa/{empresa}/vendas/excluir_venda/{hash}', [EmpresaController::class, 'dashboard_vendas_detalhes_excluir_venda'])->name('dashboard_vendas_detalhes_excluir_venda');
+
+    Route::post('/empresa/{empresa}/vendas/dados_garantia/{hash}', [EmpresaController::class, 'dashboard_dados_garantia'])->name('dashboard_dados_garantia');
 
 
     Route::get('/empresa/{empresa}/logout', [EmpresaController::class, 'logout_empresa'])->name('logout_empresa');

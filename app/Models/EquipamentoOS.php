@@ -30,6 +30,7 @@ class EquipamentoOS extends Model
 
         'aguardando_pcs_data',
         'aguardando_pcs_obs',
+        'os_nao_autorizada_obs',
 
         'data_compra_garantia',
         'vendido_por_garantia',

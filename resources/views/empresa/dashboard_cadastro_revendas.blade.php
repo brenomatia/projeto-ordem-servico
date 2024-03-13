@@ -32,50 +32,48 @@
         <form action="{{ route('dashboard_cadastro_revendas', ['empresa' => $empresa->name]) }}" method="POST">
             @csrf
             <div class="form-row">
-                <div class="form-group col-md-6">
+                <div class="form-group col-md-3">
                     <label for="responsavel">Nome do Responsável</label>
                     <input type="text" class="form-control" id="responsavel" name="revenda_nome"
                         placeholder="Digite o nome do responsável">
                 </div>
-                <div class="form-group col-md-6">
+                <div class="form-group col-md-3">
                     <label for="empresa">Nome da Empresa</label>
                     <input type="text" class="form-control" id="empresa" name="revenda_nome_empresa"
                         placeholder="Digite o nome da empresa">
                 </div>
-            </div>
-            <div class="form-row">
                 <div class="form-group col-md-3">
                     <label for="cnpj">CNPJ/CPF da Empresa</label>
                     <input type="text" class="form-control" id="cnpj" name="revenda_cnpj"
                         placeholder="Digite o CNPJ/CPF da empresa">
                 </div>
-                <div class="form-group col-md-2">
-                    <label for="numero">Número</label>
-                    <input type="text" class="form-control" id="numero" name="revenda_numero"
-                        placeholder="Nº da casa ou empresa">
-                </div>
-                <div class="form-group col-md-2">
+                <div class="form-group col-md-3">
                     <label for="desconto">Desconto (%)</label>
                     <input type="number" class="form-control" id="desconto" name="revenda_desconto"
                         placeholder="Digite o desconto">
                 </div>
-                <div class="form-group col-md-5">
-                    <label for="endereco">Endereço</label>
-                    <input type="text" class="form-control" id="endereco" name="revenda_endereco"
-                        placeholder="Digite o endereço">
-                </div>
             </div>
             <div class="form-row">
-                <div class="form-group col-md-4">
+                <div class="form-group col-md-2">
                     <label for="cep">CEP</label>
                     <input type="text" class="form-control" id="cep" name="revenda_cep" placeholder="Digite o CEP">
                 </div>
-                <div class="form-group col-md-4">
+                <div class="form-group col-md-1">
+                    <label for="numero">Número</label>
+                    <input type="text" class="form-control" id="numero" name="revenda_numero"
+                        placeholder="Nº">
+                </div>
+                <div class="form-group col-md-3">
+                    <label for="endereco">Endereço</label>
+                    <input type="text" class="form-control" id="endereco" name="revenda_endereco"
+                        placeholder="Digite o endereço">
+                </div>                
+                <div class="form-group col-md-3">
                     <label for="email">E-mail</label>
                     <input type="email" class="form-control" id="email" name="revenda_email"
                         placeholder="Digite o e-mail">
                 </div>
-                <div class="form-group col-md-4">
+                <div class="form-group col-md-3">
                     <label for="celular">Celular</label>
                     <input type="text" class="form-control" id="celular" name="revenda_celular"
                         placeholder="Digite o celular">

@@ -27,6 +27,7 @@ return new class extends Migration
 
             $table->string('aguardando_pcs_data')->nullable();
             $table->string('aguardando_pcs_obs')->nullable();
+            $table->string('os_nao_autorizada_obs')->nullable();
 
             $table->string('data_compra_garantia')->nullable();
             $table->string('vendido_por_garantia')->nullable();

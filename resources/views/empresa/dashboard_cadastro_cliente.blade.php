@@ -130,7 +130,7 @@
                                     <div class="modal fade" id="viewHistoric{{ $cliente->id }}" tabindex="-1"
                                         role="dialog" aria-labelledby="viewHistoric{{ $cliente->id }}"
                                         aria-hidden="true">
-                                        <div class="modal-dialog" role="document">
+                                        <div class="modal-dialog modal-lg" role="document">
                                             <div class="modal-content">
                                                 <div class="modal-header">
                                                     <h5 class="modal-title" id="viewHistoric{{ $cliente->id }}">
@@ -141,7 +141,35 @@
                                                     </button>
                                                 </div>
                                                 <div class="modal-body">
-                                                    HISTORICO CLIENTE
+
+
+                                                    <div class="table-responsive">
+                                                        <table class="table table-bordered table-striped">
+                                                            <thead class="thead-dark">
+                                                            <tr>
+                                                                <th class="text-center">ORDEM Nº</th>
+                                                                <th class="text-center">VENDEDOR</th>
+                                                                <th class="text-center">STATUS</th>
+                                                                <th class="text-center">ABERTURA</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach ($ordemServicos as $ordem)
+                                                                @if($ordem->id_cliente == $cliente->id)
+                                                                    <tr>
+                                                                        <td class="align-middle text-center">{{ $ordem->id }}</td>
+                                                                        <td class="align-middle text-center">{{ $ordem->abertura_da_ordem }}</td>
+                                                                        <td class="align-middle text-center">{{ $ordem->status }}</td>
+                                                                        <td class="align-middle text-center">{{ $ordem->created_at->format('d/m/Y H:i:s') }}</td>
+                                                                    </tr>
+                                                                @endif
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+
+
+                                                    
                                                 </div>
                                             </div>
                                         </div>

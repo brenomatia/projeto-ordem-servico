@@ -20,6 +20,7 @@ class OrdemServico extends Model
         'id_cliente',
         'abertura_da_ordem',
         'status',
+        'tipo',
     ];
 
     // Define o relacionamento belongsTo com a model Cliente

@@ -51,6 +51,36 @@
                 <form action="{{ route('dashboard_cadastrando_ordem', ['empresa' => $empresa->name]) }}" method="POST"
                     id="formExterno">
                     @csrf
+
+                    @foreach ($equipamentosOS as $new)
+                        @if ($new->listado != 'SIM')
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <i class="fa-solid fa-circle-chevron-right text-primary mr-2"></i>
+                                        <input type="hidden" name="id_equipamento[]" value="{{ $new->id }}" />
+                                        <span style="flex: 1;">{{ $new->equipamento }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    @endforeach
+
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <button class="btn bg-primary rounded-left" type="button" id="button-addon2"><i class="fa-solid fa-filter"></i></button>
+                        </div>
+                        <select name="tipo_filter" id="tipo_filter" class="custom-select" required>
+                            <option value="">Listar o tipo de OS</option>
+                            <option value="BOMBA D' ÁGUA">BOMBA D' ÁGUA</option>
+                            <option value="FERRAMENTA">FERRAMENTA</option>
+                            <option value="MOTOR EM GERAL">MOTOR EM GERAL</option>
+                            <option value="APARELHO DE CHOQUE">APARELHO DE CHOQUE</option>
+                            <option value="COMPRESSOR">COMPRESSOR</option>
+                            <option value="APARELHO DE SOLDA">APARELHO DE SOLDA</option>
+                        </select>
+                    </div>
+
                         <div class="input-group mb-3">
                             <div class="input-group-append">
                                 <button class="btn bg-primary rounded-left" type="button" id="button-addon2"><i
@@ -73,21 +103,6 @@
                                 <option value="">Listagem de clientes</option>
                             </select>
                         </div>
-
-                        @foreach ($equipamentosOS as $new)
-                        @if ($new->listado != 'SIM')
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center mb-3">
-                                        <i class="fa-solid fa-circle-chevron-right text-primary mr-2"></i>
-                                        <input type="hidden" name="id_equipamento[]" value="{{ $new->id }}" />
-                                        <span style="flex: 1;">{{ $new->equipamento }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                    
-                        @endif
-                    @endforeach
                     
                     
 
@@ -151,7 +166,7 @@
                                 <div class="card">
                                     <div class="card-body">
 
-                                        <a href="{{ URL::route('dashboard_gerador_pdf_route', ['empresa'=>$empresa->name, 'id_ordem'=>$ordem->id]) }}"><button class="btn bg-purple mb-3"><i class="fa-solid fa-file-pdf mr-2"></i>VISUALIZAR PDF</button></a>
+                                        <a href="{{ URL::route('dashboard_gerador_pdf_route', ['empresa'=>$empresa->name, 'id_ordem'=>$ordem->id]) }}" target="_Blank"><button class="btn bg-purple mb-3"><i class="fa-solid fa-file-pdf mr-2"></i>VISUALIZAR PDF</button></a>
 
                                         <div class="row">
                                             <div class="col-lg-3 col-md-6">
@@ -376,8 +391,11 @@
                                                                                 PARA CLIENTE</option>
                                                                         </select>
                                                                     </div>
-                                                                    <button class="btn bg-primary col-12">ATUALIZAR
-                                                                        DADOS</button>
+                                                                    <form action="{{ route('dashboard_ordem_atualizar_status_nao_autorizado', ['empresa'=>$empresa->name, 'id_ordem'=>$ordem->id, 'id'=>$equipamento->id]) }}" method="POST">
+                                                                        @csrf
+                                                                        <textarea class="form-control mb-3" rows="4" placeholder="@if(empty($equipamento->os_nao_autorizada_obs)) Observações @endif" name="os_nao_autorizada_obs">@if(!empty($equipamento->os_nao_autorizada_obs)){{ $equipamento->os_nao_autorizada_obs }}@endif</textarea>
+                                                                        <button class="btn bg-primary col-12">ATUALIZAR DADOS</button>
+                                                                    </form>
                                                                 @elseif($equipamento->status == 'DESCARTE')
                                                                     <div class="alert bg-orange" role="alert">
                                                                         <div class="d-flex align-items-center text-white">
@@ -386,6 +404,7 @@
                                                                             <span>O item foi descartado.</span>
                                                                         </div>
                                                                     </div>
+                                                                    <textarea class="form-control mb-3" rows="4" disabled placeholder="@if(empty($equipamento->os_nao_autorizada_obs)) Observações @endif" name="os_nao_autorizada_obs">@if(!empty($equipamento->os_nao_autorizada_obs)){{ $equipamento->os_nao_autorizada_obs }}@endif</textarea>
                                                                     <form class="statusForm">
                                                                         @csrf
                                                                         <input type="hidden" value="NÃO AUTORIZADO"
@@ -405,14 +424,7 @@
                                                                             
                                                                         </div>
                                                                     </div>
-
-                                                                    <div class="card">
-                                                                        <div class="card-body" style="text-align: left;">
-                                                                            <textarea class="form-control mb-3" rows="4" placeholder="Observações"></textarea>
-                                                                            <button class="btn bg-primary col-12">ATUALIZAR
-                                                                                DADOS</button>
-                                                                        </div>
-                                                                    </div>
+                                                                    <textarea class="form-control mb-3" rows="4" disabled placeholder="@if(empty($equipamento->os_nao_autorizada_obs)) Observações @endif" name="os_nao_autorizada_obs">@if(!empty($equipamento->os_nao_autorizada_obs)){{ $equipamento->os_nao_autorizada_obs }}@endif</textarea>
 
                                                                     <form class="statusForm">
                                                                         @csrf

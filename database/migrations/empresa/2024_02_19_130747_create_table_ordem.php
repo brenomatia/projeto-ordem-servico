@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('id_cliente')->nullable();
             $table->string('abertura_da_ordem')->nullable();
             $table->string('status')->nullable();
+            $table->string('tipo')->nullable();
             $table->timestamps();
         });
     }

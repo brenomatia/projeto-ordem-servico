@@ -19,6 +19,7 @@ return new class extends Migration
             $table->decimal('valorPago', 10,2)->nullable();
             $table->string('parcelas')->nullable();
             $table->string('tipo_pagamento')->nullable();
+            $table->string('tipo')->nullable();
             $table->timestamps();
         });
     }
