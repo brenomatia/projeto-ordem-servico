@@ -94,8 +94,8 @@
         <aside class="main-sidebar bg-white elevation-4">
             <!-- Brand Logo -->
             <div class="brand text-center">
-                <img src="{{ asset('logos/' . $empresa->logo) }}" class="brand-image mt-1 mb-5"
-                    style="opacity: .8; width: 100px;">
+                <img src="{{ asset('logos/' . $empresa->logo) }}" class="brand-image mt-5 mb-5"
+                    style="width: 248px;">
             </div>
 
             <!-- Sidebar -->

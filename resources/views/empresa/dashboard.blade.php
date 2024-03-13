@@ -33,7 +33,11 @@
             <div class="col-lg-3 col-md-6">
                 <div class="small-box bg-warning">
                     <div class="inner">
-                        <h3>R$ {{ number_format($sumMensal / $atendimentoTotal, 2, ',', '.') }}</h3>
+                        <h3>R$ @if ($atendimentoTotal > 0)
+                            {{ number_format($sumMensal / $atendimentoTotal, 2, ',', '.') }}
+                        @else
+                            0
+                        @endif</h3>
                         <p>TIQUETE MÉDIO</p>
                     </div>
                     <div class="icon">

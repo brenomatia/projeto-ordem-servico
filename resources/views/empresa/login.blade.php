@@ -31,7 +31,8 @@
         <!-- /.login-logo -->
         <div class="card card-outline card-primary">
             <div class="card-header text-center">
-                <img class="" src="{{ asset('logos/'. $empresa->logo ) }}" height="200" width="200">
+                <img src="{{ asset('logos/' . $empresa->logo) }}" class="brand-image"
+                    style="width: 300px;">
             </div>
             <div class="card-body">
 
