@@ -106,9 +106,7 @@
                 <nav class="mt-2">
                     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
                         data-accordion="false">
-                        <!-- Add icons to the links using the .nav-icon class
-               with font-awesome or any other icon font library -->
-
+                        
                         <li class="nav-item">
                             <a href="{{ route('dashboard_empresa', ['empresa' => $empresa->name]) }}"
                                 class="nav-link">
@@ -132,14 +130,6 @@
                                         class="nav-link">
                                         <i class="nav-icon fa-solid fa-user-large"></i>
                                         <p>Clientes</p>
-                                    </a>
-                                </li>
-
-                                <li class="nav-item">
-                                    <a href="{{ route('dashboard_equipamentos', ['empresa' => $empresa->name]) }}"
-                                        class="nav-link">
-                                       <i class="nav-icon fa-solid fa-screwdriver-wrench"></i>
-                                        <p>Equipamentos</p>
                                     </a>
                                 </li>
 

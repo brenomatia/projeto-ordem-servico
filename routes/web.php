@@ -39,16 +39,6 @@ Route::middleware('empresas')->group(function () {
     Route::post('/empresa/{empresa}/cadastro_cliente/deletar_cliente/{id}', [EmpresaController::class, 'dashboard_deletando_cliente'])->name('dashboard_deletando_cliente');
     Route::post('/empresa/{empresa}/cadastro_cliente/atualizar_cliente/{id}', [EmpresaController::class, 'dashboard_atualizar_cliente'])->name('dashboard_atualizar_cliente');
     
-    Route::get('/empresa/{empresa}/equipamentos', [EmpresaController::class, 'dashboard_equipamentos'])->name('dashboard_equipamentos');
-    Route::post('/empresa/{empresa}/equipamentos/cadastro', [EmpresaController::class, 'dashboard_equipamentos_cadastro'])->name('dashboard_equipamentos_cadastro');
-    Route::post('/empresa/{empresa}/equipamentos/atualizar/{id}', [EmpresaController::class, 'dashboard_equipamento_atualizar_dados'])->name('dashboard_equipamento_atualizar_dados');
-    Route::post('/empresa/{empresa}/equipamentos/deletar/{id}', [EmpresaController::class, 'dashboard_equipamento_deletar'])->name('dashboard_equipamento_deletar');
-    Route::post('/empresa/{empresa}/marca/cadastro', [EmpresaController::class, 'dashboard_marca_cadastro'])->name('dashboard_marca_cadastro');
-    Route::post('/empresa/{empresa}/marca/atualizar/{id}', [EmpresaController::class, 'dashboard_marca_atualizar'])->name('dashboard_marca_atualizar');
-    Route::post('/empresa/{empresa}/marca/deletar/{id}', [EmpresaController::class, 'dashboard_marca_deletar'])->name('dashboard_marca_deletar');
-    Route::post('/empresa/{empresa}/equipamentos/atualizar_equipamento/{id}', [EmpresaController::class, 'dashboard_atualizar_equipamentos'])->name('dashboard_atualizar_equipamentos');
-    Route::post('/empresa/{empresa}/equipamentos/deletar_equipamento/{id}', [EmpresaController::class, 'dashboard_deletar_equipamento'])->name('dashboard_deletar_equipamento');
-    
     Route::get('/empresa/{empresa}/revendas', [EmpresaController::class, 'dashboard_revendas'])->name('dashboard_revendas');
     Route::post('/empresa/{empresa}/revendas/cadastro', [EmpresaController::class, 'dashboard_cadastro_revendas'])->name('dashboard_cadastro_revendas');
     Route::post('/empresa/{empresa}/revendas/atualizar/{id}', [EmpresaController::class, 'dashboard_atualizar_revendas'])->name('dashboard_atualizar_revendas');
@@ -74,7 +64,9 @@ Route::middleware('empresas')->group(function () {
     Route::post('/empresa/{empresa}/ordem/atualizar/{id_ordem}/equipamento/{id}/garantia', [EmpresaController::class, 'dashboard_ordem_atualizar_garantia_equipamento'])->name('dashboard_ordem_atualizar_garantia_equipamento');
     Route::post('/empresa/{empresa}/ordem/atualizar/{id_ordem}/equipamento/{id}/dados_status', [EmpresaController::class, 'dashboard_ordem_atualizar_dados_status'])->name('dashboard_ordem_atualizar_dados_status');
     Route::post('/empresa/{empresa}/ordem/atualizar/{id_ordem}/equipamento/{id}/nao_autorizado', [EmpresaController::class, 'dashboard_ordem_atualizar_status_nao_autorizado'])->name('dashboard_ordem_atualizar_status_nao_autorizado');
+    
     Route::get('/empresa/{empresa}/ordem/listagem/{id_ordem}/equipamento/{id_equipamento}', [EmpresaController::class, 'dashboard_listar_items_ordem'])->name('dashboard_listar_items_ordem');
+
     Route::get('/empresa/{empresa}/ordem/listagem/{id_ordem}/buscar_produto', [EmpresaController::class, 'dashboard_ordem_buscar_produto'])->name('dashboard_ordem_buscar_produto');
     Route::post('/empresa/{empresa}/ordem/listagem/{id_ordem}/buscar_produto/listar_item', [EmpresaController::class, 'dashboard_os_listar_item'])->name('dashboard_os_listar_item');
     Route::post('/empresa/{empresa}/ordem/listagem/{id_ordem}/buscar_produto/sub_item', [EmpresaController::class, 'dashboard_os_sub_item'])->name('dashboard_os_sub_item');
@@ -82,13 +74,22 @@ Route::middleware('empresas')->group(function () {
     Route::post('/empresa/{empresa}/ordem/listagem/{id_ordem}/cadastro_mao_de_obra', [EmpresaController::class, 'dashboard_cadastro_mao_de_obra'])->name('dashboard_cadastro_mao_de_obra');
     Route::post('/empresa/{empresa}/ordem/listagem/{id_ordem}/cadastro_mao_de_obra/deletar/{id}', [EmpresaController::class, 'dashboard_deletar_mao_de_obra'])->name('dashboard_deletar_mao_de_obra');
     Route::post('/empresa/{empresa}/ordem/listagem/{id_ordem}/cadastro_anotacao', [EmpresaController::class, 'dashboard_anotacao_os'])->name('dashboard_anotacao_os');
+    Route::post('/empresa/{empresa}/ordem/listagem/{id_ordem}/aguardando_pecas/{id_equipamento}', [EmpresaController::class, 'dashboard_aguardando_pecas'])->name('dashboard_aguardando_pecas');
+
+    Route::post('/empresa/{empresa}/ordem/listagem/{id_ordem}/processar_item/{id_equipamento}', [EmpresaController::class, 'dashboard_processa_item'])->name('dashboard_processa_item');
+
+    Route::post('/empresa/{empresa}/ordem/listagem/{id_ordem}/equipamento/{id_equipamento}/substatus', [EmpresaController::class, 'dashboard_substatus'])->name('dashboard_substatus');
+    
+
+
     Route::post('/empresa/{empresa}/ordem/cadastrando_ordem/listar_terceiros/{id_ordem}/cadastro', [EmpresaController::class, 'dashboard_cadastro_terceiros'])->name('dashboard_cadastro_terceiros');
     Route::post('/empresa/{empresa}/ordem/cadastrando_ordem/listar_terceiros/{id_ordem}/atualizar/{id_terceiro}', [EmpresaController::class, 'dashboard_atualizar_terceiros'])->name('dashboard_atualizar_terceiros');
     Route::post('/empresa/{empresa}/ordem/cadastrando_ordem/listar_terceiros/{id_ordem}/deletar/{id_terceiro}', [EmpresaController::class, 'dashboard_deletar_terceiros'])->name('dashboard_deletar_terceiros');
     Route::post('/empresa/{empresa}/ordem/cadastrando_ordem/atualizar/{id_ordem}', [EmpresaController::class, 'dashboard_ordem_atualizar_dados'])->name('dashboard_ordem_atualizar_dados');
     Route::post('/empresa/{empresa}/ordem/deletar_ordem/{id}', [EmpresaController::class, 'dashboard_deletar_ordem'])->name('dashboard_deletar_ordem');
-    
     Route::get('/empresa/{empresa}/ordem/gerar/pdf/{id_ordem}', [EmpresaController::class, 'dashboard_gerador_pdf_route'])->name('dashboard_gerador_pdf_route');
+
+    Route::get('/empresa/{empresa}/ordem/genProtocolo/{id_ordem}', [EmpresaController::class, 'dashboard_gen_protocolo'])->name('dashboard_gen_protocolo');
     
     Route::get('/empresa/{empresa}/vendas', [EmpresaController::class, 'dashboard_vendas'])->name('dashboard_vendas');
     Route::post('/empresa/{empresa}/vendas/busca_produto', [EmpresaController::class, 'dashboard_vendas_busca_produto'])->name('dashboard_vendas_busca_produto');

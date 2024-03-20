@@ -45,6 +45,9 @@
                         </div>
                         <input type="text" class="form-control" id="equipamento" name="equipamento"
                             placeholder="Digite o equipamento">
+                            <div class="input-group-append">
+                                <button type="submit" class="btn btn-primary rounded-left" type="button" id="button-addon2">LISTAR EQUIPAMENTO</button>
+                            </div>
                     </div>
                 </form>
 
@@ -108,8 +111,7 @@
 
                     </form>
 
-                    <button class="btn btn-primary col-12" type="button" onclick="ativarClientes()">LISTAR ORDEM DE
-                        SERVIÇO</button>
+                    <button class="btn btn-primary col-12" type="button" onclick="ativarClientes()">LANÇAR ORDEM DE SERVIÇO</button>
 
 
             </div>
@@ -167,6 +169,42 @@
                                     <div class="card-body">
 
                                         <a href="{{ URL::route('dashboard_gerador_pdf_route', ['empresa'=>$empresa->name, 'id_ordem'=>$ordem->id]) }}" target="_Blank"><button class="btn bg-purple mb-3"><i class="fa-solid fa-file-pdf mr-2"></i>VISUALIZAR PDF</button></a>
+                                        <a href="{{ URL::route('dashboard_gen_protocolo', ['empresa'=>$empresa->name, 'id_ordem'=>$ordem->id]) }}" target="_Blank"><button class="btn bg-gray mb-3"><i class="fa-solid fa-clipboard-list mr-2"></i>GERAR PROTOCOLO</button></a>
+                                        <button type="button" class="btn btn-danger mb-3" data-toggle="modal" data-target="#deletarORDEM{{ $ordem->id }}" data-toggle="tooltip" title="Excluir cliente">
+                                            <i class="fa-solid fa-trash-can"></i> EXCLUIR ORDEM
+                                        </button>
+                                            
+                                        <div class="modal fade" id="deletarORDEM{{ $ordem->id }}" tabindex="-1" role="dialog" aria-labelledby="deletarORDEM{{ $ordem->id }}" aria-hidden="true">
+                                            <div class="modal-dialog" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title"
+                                                            id="deletarORDEM{{ $ordem->id }}">
+                                                            Confirmar Exclusão</h5>
+                                                        <button type="button" class="close" data-dismiss="modal"
+                                                            aria-label="Fechar">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        Tem certeza de que deseja a excluir a ordem do cliente
+                                                        "{{ $ordem->nome_cliente }}" ?
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary"
+                                                            data-dismiss="modal">Cancelar</button>
+                                                        <form
+                                                            action="{{ route('dashboard_ordem_deletar_registro', ['empresa' => $empresa->name, 'id_ordem' => $ordem->id]) }}"
+                                                            method="POST" style="display: inline-block;">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-danger">Excluir</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                                                         
+                                                                                
 
                                         <div class="row">
                                             <div class="col-lg-3 col-md-6">
@@ -212,7 +250,7 @@
                                 
                                                 <div class="small-box bg-danger">
                                                     <div class="inner">
-                                                        <h3>R$ {{ number_format(($carrinho + $terceiros) + $maodeobra, 2, ',', '.') }}</h3>
+                                                        <h3>R$ {{ number_format($ordem->equipamentosOS->sum('valorComDesconto'), 2, ',', '.') }}</h3>
                                                         <p>TOTAL OS</p>
                                                     </div>
                                                     <div class="icon">
@@ -229,371 +267,22 @@
                                                 @foreach ($equipamentosListados as $equipamento)
                                                     @if ($equipamento->os_permitida == $ordem->id)
                                                         <tr>
-                                                            <td class="align-middle text-center">
-
-                                                                @if ($equipamento->status == 'DESCARTE' || $equipamento->status == 'ENTREGUE PARA CLIENTE')
-                                                                @else
-                                                                    <select class="form-control status-select mb-2"
-                                                                        id="status_{{ $equipamento->id }}" style="border: 1px solid #007BFF;">
-                                                                        <option value="AGUARDANDO ORÇAMENTO"
-                                                                            @if ($equipamento->status == 'AGUARDANDO ORÇAMENTO') selected @endif>
-                                                                            AGUARDANDO ORÇAMENTO</option>
-                                                                        <option value="AGUARDANDO AUTORIZAÇÃO"
-                                                                            @if ($equipamento->status == 'AGUARDANDO AUTORIZAÇÃO') selected @endif>
-                                                                            AGUARDANDO AUTORIZAÇÃO</option>
-                                                                        <option value="AUTORIZADO"
-                                                                            @if ($equipamento->status == 'AUTORIZADO') selected @endif>
-                                                                            AUTORIZADO</option>
-                                                                        <option value="AGUARDANDO PEÇAS"
-                                                                            @if ($equipamento->status == 'AGUARDANDO PEÇAS') selected @endif>
-                                                                            AGUARDANDO PEÇAS</option>
-                                                                        <option value="NÃO AUTORIZADO"
-                                                                            @if ($equipamento->status == 'NÃO AUTORIZADO') selected @endif>
-                                                                            NÃO AUTORIZADO</option>
-                                                                        <option value="PRONTO"
-                                                                            @if ($equipamento->status == 'PRONTO') selected @endif>
-                                                                            PRONTO</option>
-                                                                        <option value="ENTREGUE"
-                                                                            @if ($equipamento->status == 'ENTREGUE') selected @endif>
-                                                                            ENTREGUE</option>
-                                                                    </select>
-                                                                @endif
-                                                                @if ($equipamento->status == 'AGUARDANDO ORÇAMENTO')
-                                                                @elseif($equipamento->status == 'AGUARDANDO AUTORIZAÇÃO')
-                                                                <form action="{{ route('dashboard_ordem_atualizar_dados_status', ['empresa'=>$empresa->name, 'id_ordem'=>$ordem->id, 'id'=>$equipamento->id]) }}" method="POST">
-                                                                    @csrf
-                                                                    <div class="card">
-                                                                        <div class="card-body">
-
-                                                                            <div class="input-group mb-3">
-                                                                                <div class="input-group-append">
-                                                                                    <button
-                                                                                        class="btn bg-primary rounded-left"
-                                                                                        type="button"
-                                                                                        id="button-addon2">R$</button>
-                                                                                </div>
-                                                                                <input type="text" class="form-control" id="valor_equipamento" name="valor_equipamento" @if(empty($equipamento->valor_autorizado)) placeholder="Insira o valor" @else value="{{ $equipamento->valor_autorizado }}" @endif>
-
-                                                                            </div>
-                                                                            <button class="btn bg-primary col-12" type="submit">ATUALIZAR
-                                                                                DADOS</button>
-                                                                        </div>
-                                                                    </div>
-                                                                </form>
-                                                                @elseif($equipamento->status == 'AUTORIZADO')
-                                                                <form action="{{ route('dashboard_ordem_atualizar_dados_status', ['empresa'=>$empresa->name, 'id_ordem'=>$ordem->id, 'id'=>$equipamento->id]) }}" method="POST">
-                                                                    @csrf
-                                                                    <div class="card">
-                                                                        <div class="card-body" style="text-align: left;">
-                                                                            <label>Valor:</label>
-                                                                            <div class="input-group mb-3">
-                                                                                <div class="input-group-append">
-                                                                                    <button
-                                                                                        class="btn bg-primary rounded-left"
-                                                                                        type="button"
-                                                                                        id="button-addon2">R$</button>
-                                                                                </div>
-                                                                                <input type="text" class="form-control"
-                                                                                    id="valor_equipamento"
-                                                                                    name="valor_equipamento"
-                                                                                    @if(empty($equipamento->valor_autorizado)) placeholder="Digite o valor" @else value="{{ $equipamento->valor_autorizado }}" @endif>
-                                                                            </div>
-                                                                            <label>Valor final:</label>
-                                                                            <div class="input-group mb-3">
-                                                                                <div class="input-group-append">
-                                                                                    <button
-                                                                                        class="btn bg-primary rounded-left"
-                                                                                        type="button"
-                                                                                        id="button-addon2">R$</button>
-                                                                                </div>
-                                                                                <input type="text" class="form-control"
-                                                                                    id="valor_final_equipamento"
-                                                                                    name="valor_final_autorizado"
-                                                                                    @if(empty($equipamento->valor_final_autorizado)) placeholder="Digite o valor" @else value="{{ $equipamento->valor_final_autorizado }}" @endif>
-                                                                            </div>
-                                                                            <label>Valor pago:</label>
-                                                                            <div class="input-group mb-3">
-                                                                                <div class="input-group-append">
-                                                                                    <button
-                                                                                        class="btn bg-primary rounded-left"
-                                                                                        type="button"
-                                                                                        id="button-addon2">R$</button>
-                                                                                </div>
-                                                                                <input type="text" class="form-control"
-                                                                                    id="valor_pago_equipamento"
-                                                                                    name="valor_pago_autorizado"
-                                                                                    @if(empty($equipamento->valor_pago_autorizado)) placeholder="Digite o valor" @else value="{{ $equipamento->valor_pago_autorizado }}" @endif>
-                                                                            </div>
-
-                                                                            <label>Forma de pagamento:</label>
-                                                                            <div class="input-group mb-3">
-                                                                                <div class="input-group-append">
-                                                                                    <button
-                                                                                        class="btn bg-primary rounded-left"
-                                                                                        type="button"
-                                                                                        id="button-addon2"><i
-                                                                                            class="fa-solid fa-basket-shopping"></i></button>
-                                                                                </div>
-                                                                                <select class="custom-select" id="forma-pagamento" name="forma_pagamento">
-                                                                                    <option value="">Selecione um opção</option>
-                                                                                    <option value="PIX" @if($equipamento->tipo_pagamento_autorizado == 'PIX') selected @endif>PIX</option>
-                                                                                    <option value="DINHEIRO" @if($equipamento->tipo_pagamento_autorizado == 'DINHEIRO') selected @endif>DINHEIRO</option>
-                                                                                    <option value="CARTÃO CRÉDITO" @if($equipamento->tipo_pagamento_autorizado == 'CARTÃO CRÉDITO') selected @endif>CARTÃO DE CRÉDITO</option>
-                                                                                    <option value="CARTÃO DÉBITO" @if($equipamento->tipo_pagamento_autorizado == 'CARTÃO DÉBITO') selected @endif>CARTÃO DE DÉBITO</option>
-                                                                                    <option value="BOLETO" @if($equipamento->tipo_pagamento_autorizado == 'BOLETO') selected @endif>BOLETO</option>
-                                                                                </select>
-                                                                                
-                                                                            </div>
-                                                                            <button type="submit" class="btn bg-primary col-12">ATUALIZAR
-                                                                                DADOS</button>
-                                                                        </div>
-                                                                    </div>
-                                                                </form>
-                                                                @elseif($equipamento->status == 'AGUARDANDO PEÇAS')
-                                                                <form action="{{ route('dashboard_ordem_atualizar_dados_status', ['empresa'=>$empresa->name, 'id_ordem'=>$ordem->id, 'id'=>$equipamento->id]) }}" method="POST">
-                                                                    @csrf
-                                                                    <div class="card">
-                                                                        <div class="card-body" style="text-align: left;">
-                                                                            <div class="input-group mb-3">
-                                                                                <div class="input-group-append">
-                                                                                    <button
-                                                                                        class="btn bg-primary rounded-left"
-                                                                                        type="button"
-                                                                                        id="button-addon2"><i
-                                                                                            class="fa-solid fa-calendar-plus"></i></button>
-                                                                                </div>
-                                                                                <input type="date" class="form-control"
-                                                                                    id="date_pedido_pecas" 
-                                                                                    name="aguardando_pcs_data"
-                                                                                    value="{{ $equipamento->aguardando_pcs_data }}"
-                                                                                    />
-                                                                            </div>
-
-                                                                            <textarea class="form-control mb-3" rows="4" placeholder="@if(empty($equipamento->aguardando_pcs_obs)) Observações @endif" name="aguardando_pcs_obs">@if(!empty($equipamento->aguardando_pcs_obs)){{ $equipamento->aguardando_pcs_obs }}@endif</textarea>
-
-                                                                            <button class="btn bg-primary col-12">ATUALIZAR
-                                                                                DADOS</button>
-                                                                        </div>
-                                                                    </div>
-                                                                </form>
-                                                                @elseif($equipamento->status == 'NÃO AUTORIZADO')
-                                                                    <div class="input-group mt-3 mb-3">
-                                                                        <div class="input-group-append">
-                                                                            <button class="btn bg-warning rounded-left"
-                                                                                type="button" id="button-addon2"><i
-                                                                                    class="fa-solid fa-triangle-exclamation"></i></button>
-                                                                        </div>
-                                                                        <select class="custom-select select2"
-                                                                            id="seleciona2_{{ $equipamento->id }}">
-                                                                            <option value="">Selecione</option>
-                                                                            <option value="DESCARTE">DESCARTE</option>
-                                                                            <option value="ENTREGUE PARA CLIENTE">ENTREGUE
-                                                                                PARA CLIENTE</option>
-                                                                        </select>
-                                                                    </div>
-                                                                    <form action="{{ route('dashboard_ordem_atualizar_status_nao_autorizado', ['empresa'=>$empresa->name, 'id_ordem'=>$ordem->id, 'id'=>$equipamento->id]) }}" method="POST">
-                                                                        @csrf
-                                                                        <textarea class="form-control mb-3" rows="4" placeholder="@if(empty($equipamento->os_nao_autorizada_obs)) Observações @endif" name="os_nao_autorizada_obs">@if(!empty($equipamento->os_nao_autorizada_obs)){{ $equipamento->os_nao_autorizada_obs }}@endif</textarea>
-                                                                        <button class="btn bg-primary col-12">ATUALIZAR DADOS</button>
-                                                                    </form>
-                                                                @elseif($equipamento->status == 'DESCARTE')
-                                                                    <div class="alert bg-orange" role="alert">
-                                                                        <div class="d-flex align-items-center text-white">
-                                                                            <i
-                                                                                class="fas fa-exclamation-triangle mr-3 text-white"></i>
-                                                                            <span>O item foi descartado.</span>
-                                                                        </div>
-                                                                    </div>
-                                                                    <textarea class="form-control mb-3" rows="4" disabled placeholder="@if(empty($equipamento->os_nao_autorizada_obs)) Observações @endif" name="os_nao_autorizada_obs">@if(!empty($equipamento->os_nao_autorizada_obs)){{ $equipamento->os_nao_autorizada_obs }}@endif</textarea>
-                                                                    <form class="statusForm">
-                                                                        @csrf
-                                                                        <input type="hidden" value="NÃO AUTORIZADO"
-                                                                            name="status" />
-                                                                        <button type="button"
-                                                                            class="btn bg-danger col-12 status-button"
-                                                                            data-status="NÃO AUTORIZADO"
-                                                                            data-equipamento-id="{{ $equipamento->id }}">VOLTAR
-                                                                            PARA NÃO AUTORIZADO</button>
-                                                                    </form>
-                                                                @elseif($equipamento->status == 'ENTREGUE PARA CLIENTE')
-                                                                    <div class="alert alert-success" role="alert">
-                                                                        <div class="d-flex align-items-center">
-                                                                            <i
-                                                                                class="fas fa-exclamation-triangle mr-3"></i>
-                                                                            <span>Item já entregue para o cliente</span>
-                                                                            
-                                                                        </div>
-                                                                    </div>
-                                                                    <textarea class="form-control mb-3" rows="4" disabled placeholder="@if(empty($equipamento->os_nao_autorizada_obs)) Observações @endif" name="os_nao_autorizada_obs">@if(!empty($equipamento->os_nao_autorizada_obs)){{ $equipamento->os_nao_autorizada_obs }}@endif</textarea>
-
-                                                                    <form class="statusForm">
-                                                                        @csrf
-                                                                        <input type="hidden" value="NÃO AUTORIZADO"
-                                                                            name="status" />
-                                                                        <button type="button"
-                                                                            class="btn bg-danger col-12 status-button"
-                                                                            data-status="NÃO AUTORIZADO"
-                                                                            data-equipamento-id="{{ $equipamento->id }}">VOLTAR
-                                                                            PARA NÃO AUTORIZADO</button>
-                                                                    </form>
-                                                                @elseif($equipamento->status == "PRONTO")
-                                                                <form action="{{ route('dashboard_ordem_atualizar_dados_status', ['empresa'=>$empresa->name, 'id_ordem'=>$ordem->id, 'id'=>$equipamento->id]) }}" method="POST">
-                                                                    @csrf
-                                                                    <div class="card">
-                                                                        <div class="card-body" style="text-align: left;">
-                                                                            <label>Valor:</label>
-                                                                            <div class="input-group mb-3">
-                                                                                <div class="input-group-append">
-                                                                                    <button
-                                                                                        class="btn bg-primary rounded-left"
-                                                                                        type="button"
-                                                                                        id="button-addon2">R$</button>
-                                                                                </div>
-                                                                                <input type="text" class="form-control"
-                                                                                    id="valor_equipamento"
-                                                                                    name="valor_equipamento"
-                                                                                    @if(empty($equipamento->valor_autorizado)) placeholder="Digite o valor" @else value="{{ $equipamento->valor_autorizado }}" @endif>
-                                                                            </div>
-                                                                            <label>Valor final:</label>
-                                                                            <div class="input-group mb-3">
-                                                                                <div class="input-group-append">
-                                                                                    <button
-                                                                                        class="btn bg-primary rounded-left"
-                                                                                        type="button"
-                                                                                        id="button-addon2">R$</button>
-                                                                                </div>
-                                                                                <input type="text" class="form-control"
-                                                                                    id="valor_final_equipamento"
-                                                                                    name="valor_final_autorizado"
-                                                                                    @if(empty($equipamento->valor_final_autorizado)) placeholder="Digite o valor" @else value="{{ $equipamento->valor_final_autorizado }}" @endif>
-                                                                            </div>
-                                                                            <label>Valor pago:</label>
-                                                                            <div class="input-group mb-3">
-                                                                                <div class="input-group-append">
-                                                                                    <button
-                                                                                        class="btn bg-primary rounded-left"
-                                                                                        type="button"
-                                                                                        id="button-addon2">R$</button>
-                                                                                </div>
-                                                                                <input type="text" class="form-control"
-                                                                                    id="valor_pago_equipamento"
-                                                                                    name="valor_pago_autorizado"
-                                                                                    @if(empty($equipamento->valor_pago_autorizado)) placeholder="Digite o valor" @else value="{{ $equipamento->valor_pago_autorizado }}" @endif>
-                                                                            </div>
-
-                                                                            <label>Forma de pagamento:</label>
-                                                                            <div class="input-group mb-3">
-                                                                                <div class="input-group-append">
-                                                                                    <button
-                                                                                        class="btn bg-primary rounded-left"
-                                                                                        type="button"
-                                                                                        id="button-addon2"><i
-                                                                                            class="fa-solid fa-basket-shopping"></i></button>
-                                                                                </div>
-                                                                                <select class="custom-select" id="forma-pagamento" name="forma_pagamento">
-                                                                                    <option value="">Selecione um opção</option>
-                                                                                    <option value="PIX" @if($equipamento->tipo_pagamento_autorizado == 'PIX') selected @endif>PIX</option>
-                                                                                    <option value="DINHEIRO" @if($equipamento->tipo_pagamento_autorizado == 'DINHEIRO') selected @endif>DINHEIRO</option>
-                                                                                    <option value="CARTÃO CRÉDITO" @if($equipamento->tipo_pagamento_autorizado == 'CARTÃO CRÉDITO') selected @endif>CARTÃO DE CRÉDITO</option>
-                                                                                    <option value="CARTÃO DÉBITO" @if($equipamento->tipo_pagamento_autorizado == 'CARTÃO DÉBITO') selected @endif>CARTÃO DE DÉBITO</option>
-                                                                                    <option value="BOLETO" @if($equipamento->tipo_pagamento_autorizado == 'BOLETO') selected @endif>BOLETO</option>
-                                                                                </select>
-                                                                                
-                                                                            </div>
-                                                                            <button type="submit" class="btn bg-primary col-12">ATUALIZAR
-                                                                                DADOS</button>
-                                                                        </div>
-                                                                    </div>
-                                                                </form>
-                                                                @elseif($equipamento->status == "ENTREGUE")
-
-                                                                <div class="alert alert-success" role="alert">
-                                                                    <div class="d-flex align-items-center">
-                                                                        <i
-                                                                            class="fas fa-exclamation-triangle mr-3"></i>
-                                                                        <span>Item entregue para o cliente {{ $ordem->nome_cliente }} .</span>
-                                                                        
-                                                                    </div>
-                                                                </div>
-
-                                                                @endif
-
-                                                                <p style="font-size: 12px; text-align: left;">Ultima atualização: {{ $equipamento->updated_at->format('d/m/Y H:i:s') }} - Por: {{ $equipamento->q_aut }}</p>
-
-                                                            </td>
                                                             <td class="align-middle text-center" style="cursor: pointer;" onclick="window.location='{{ route('dashboard_listar_items_ordem', ['empresa'=>$empresa->name, 'id_ordem'=>$ordem->id, 'id_equipamento'=>$equipamento->id]) }}';">
-                                                                {{ $equipamento->equipamento }}
-                                                                <br>
-                                                                <span class="badge badge-primary" style="font-size: 18px;">Total: R$ {{ ( $equipamento->carrinhos()->sum('valor') +  $equipamento->terceiro()->sum('valor') ) +  $equipamento->maodeobra()->sum('valor') }}</span>
-                                                            </td>
-                                                            <td class="align-middle text-center">
-
-                                                                <!-- VISUALIZAR GARANTIA -->
-                                                                @if($equipamento->nfe_garantia == null)
-                                                                <button type="button" class="btn bg-purple"
-                                                                    data-toggle="modal"
-                                                                    data-target="#garantia_{{ $equipamento->id }}"
-                                                                    data-toggle="tooltip" title="Garantia equipamento">
-                                                                    <i class="fa-solid fa-certificate"></i>
-                                                                </button>
-                                                                @else
-                                                                <button type="button" class="btn bg-success"
-                                                                    data-toggle="modal"
-                                                                    data-target="#garantia_{{ $equipamento->id }}"
-                                                                    data-toggle="tooltip" title="Garantia equipamento">
-                                                                    GARANTIA REGISTRADA
-                                                                </button>
+                                                                <strong>{{ $equipamento->equipamento }}</strong>
+                                                                @if(($equipamento->valorComDesconto == $equipamento->valorPago) && ($equipamento->valorPago > 0))
+                                                                <p><span class="badge pill-badge bg-success">Equipamento pago!</span></p>
                                                                 @endif
 
-                                                                <div class="modal fade"
-                                                                    id="garantia_{{ $equipamento->id }}"
-                                                                    tabindex="-1" role="dialog"
-                                                                    aria-labelledby="garantia_{{ $equipamento->id }}"
-                                                                    aria-hidden="true">
-                                                                    <div class="modal-dialog" role="document">
-                                                                        <div class="modal-content">
-                                                                            <div class="modal-header">
-                                                                                <h5 class="modal-title"
-                                                                                    id="garantia_{{ $equipamento->id }}">
-                                                                                    {{ $equipamento->equipamento }} garantia</h5>
-                                                                                <button type="button" class="close"
-                                                                                    data-dismiss="modal"
-                                                                                    aria-label="Fechar">
-                                                                                    <span aria-hidden="true">&times;</span>
-                                                                                </button>
-                                                                            </div>
-                                                                            <div class="modal-body"
-                                                                                style="text-align: left;">
-
-                                                                                <form
-                                                                                    action="{{ route('dashboard_ordem_atualizar_garantia_equipamento', ['empresa' => $empresa->name, 'id_ordem' => $ordem->id, 'id' => $equipamento->id]) }}"
-                                                                                    method="POST">
-                                                                                    @csrf
-                                                                                    <label>Data compra:</label>
-                                                                                    <input type="date" class="form-control mb-2" name="data" value="{{ $equipamento->data_compra_garantia }}" />
-                                                                                    <label>Vendido por:</label>
-                                                                                    <input type="text" class="form-control mb-2" name="vendedor" value="{{ $equipamento->vendido_por_garantia }}" />
-                                                                                    <label>Defeito:</label>
-                                                                                    <input type="text" class="form-control mb-2" name="defeito" value="{{ $equipamento->defeito_garantia }}" />
-                                                                                    <label>Nº NFE:</label>
-                                                                                    <input type="text" class="form-control mb-2" name="nfe" value="{{ $equipamento->nfe_garantia }}" />
-                                                                                    <label>Uso profissional:</label>
-                                                                                    <select class="form-control mb-2" name="opcao">
-                                                                                        <option value="">Selecione uma opção válida</option>
-                                                                                        <option value="sim" @if($equipamento->uso_profissional_garantia == 'sim') selected @endif>Sim</option>
-                                                                                        <option value="nao" @if($equipamento->uso_profissional_garantia == 'nao') selected @endif>Não</option>
-                                                                                    </select>
-                                                                                    
-                                                                                    <button type="submit" class="btn btn-primary col-12">ATUALIZAR</button>
-                                                                                </form>
-
-
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <!-- FIM VISUALIZAR GARANTIA -->
-
+                                                                <p class="text-black">{{ $equipamento->status }}</p>
+                                                            </td>
+                                                            <td class="align-middle text-center" style="cursor: pointer;" onclick="window.location='{{ route('dashboard_listar_items_ordem', ['empresa'=>$empresa->name, 'id_ordem'=>$ordem->id, 'id_equipamento'=>$equipamento->id]) }}';"> 
+                                                                @if($equipamento->valorComDesconto)
+                                                                    R$ {{ number_format($equipamento->valorComDesconto, 2, ',', '.') }}
+                                                                @else
+                                                                    R$ {{ number_format(($equipamento->Carrinhos()->sum('valor') + $equipamento->Terceiro()->sum('valor')) + $equipamento->MaoDeObra()->sum('valor'), 2, ',', '.') }}
+                                                                @endif
+                                                            </td>
+                                                            <td class="align-middle text-center">
 
                                                                 <!-- APAGAR ATUALIZAR EQUIPAMENTO -->
 
@@ -601,7 +290,7 @@
                                                                     data-toggle="modal"
                                                                     data-target="#atualizardados_{{ $equipamento->id }}"
                                                                     data-toggle="tooltip" title="Alterar nome equipamento">
-                                                                    <i class="fa-solid fa-eye"></i>
+                                                                    <i class="fa-solid fa-pen-to-square"></i>
                                                                 </button>
 
                                                                 <div class="modal fade"
@@ -653,47 +342,7 @@
 
 
 
-                                        <!-- APAGAR PRODUTO -->
-                                        <div>
-                                            <button type="button" class="btn btn-danger mb-4 mt-4 col-12" data-toggle="modal"
-                                                data-target="#deletarORDEM{{ $ordem->id }}" data-toggle="tooltip"
-                                                title="Excluir cliente">
-                                                <i class="fa-solid fa-trash-can"></i> EXCLUIR ORDEM
-                                            </button>
-    
-                                            <div class="modal fade" id="deletarORDEM{{ $ordem->id }}" tabindex="-1"
-                                                role="dialog" aria-labelledby="deletarORDEM{{ $ordem->id }}"
-                                                aria-hidden="true">
-                                                <div class="modal-dialog" role="document">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title"
-                                                                id="deletarORDEM{{ $ordem->id }}">
-                                                                Confirmar Exclusão</h5>
-                                                            <button type="button" class="close" data-dismiss="modal"
-                                                                aria-label="Fechar">
-                                                                <span aria-hidden="true">&times;</span>
-                                                            </button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            Tem certeza de que deseja a excluir a ordem do cliente
-                                                            "{{ $ordem->nome_cliente }}" ?
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary"
-                                                                data-dismiss="modal">Cancelar</button>
-                                                            <form
-                                                                action="{{ route('dashboard_ordem_deletar_registro', ['empresa' => $empresa->name, 'id_ordem' => $ordem->id]) }}"
-                                                                method="POST" style="display: inline-block;">
-                                                                @csrf
-                                                                <button type="submit" class="btn btn-danger">Excluir</button>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <!-- FIM APAGAR PRODUTO --> 
-                                            </div>
+
 
 
 
@@ -707,95 +356,6 @@
                     </div>
                 </div>
                 @endif
-
-
-                <script>
-                    $(document).ready(function() {
-                        $('.status-button').click(function() {
-                            var novoStatus = $(this).data('status');
-                            var empresaNome = '{{ $empresa->name }}';
-                            var idOrdem = '{{ $ordem->id ? $ordem->id : '' }}';
-                            var equipamentoId = $(this).data('equipamento-id');
-            
-                            // Enviar requisição AJAX para atualizar o status no banco de dados
-                            $.ajax({
-                                url: '/empresa/' + empresaNome + '/ordem/cadastrando_ordem/atualizar_status/' +
-                                    idOrdem + '/equipamento/' + equipamentoId,
-                                method: 'GET',
-                                data: {
-                                    status: novoStatus
-                                },
-                                success: function(response) {
-                                    //alert(response.message);
-                                    window.location.reload();
-                                },
-                                error: function(xhr, status, error) {
-                                    //alert(xhr.responseText);
-                                    window.location.reload();
-                                }
-                            });
-                        });
-                    });
-                </script>
-            
-                <script>
-                    $(document).ready(function() {
-                        $('.select2').change(function() {
-                            var novoStatus = $(this).val();
-                            var equipamentoId = $(this).attr('id').replace('seleciona2_', ''); // Correção do id
-                            var empresaNome = '{{ $empresa->name }}';
-                            var idOrdem = '{{ $ordem->id ? $ordem->id : '' }}';; // Correção do nome da variável
-                            // Enviar requisição AJAX para atualizar o status no banco de dados
-                            $.ajax({
-                                url: '/empresa/' + empresaNome + '/ordem/cadastrando_ordem/atualizar_status/' +
-                                    idOrdem + '/equipamento/' + equipamentoId,
-                                method: 'GET',
-                                data: {
-                                    status: novoStatus
-                                },
-                                success: function(response) {
-                                    //alert(response.message);
-                                    window.location.reload();
-                                },
-                                error: function(xhr, status, error) {
-                                    //alert(xhr.responseText);
-                                    window.location.reload();
-                                }
-                            });
-                        });
-                    });
-                </script>
-            
-                <script>
-                    $(document).ready(function() {
-                        $('.status-select').change(function() {
-                            var novoStatus = $(this).val();
-                            var equipamentoId = $(this).attr('id').replace('status_', '');
-                            var empresaNome = '{{ $empresa->name }}';
-                            var Idordem = '{{ $ordem->id ? $ordem->id : '' }}';;
-                            // Enviar requisição AJAX para atualizar o status no banco de dados
-                            $.ajax({
-                                url: '/empresa/' + empresaNome + '/ordem/cadastrando_ordem/atualizar_status/' +
-                                    Idordem + '/equipamento/' + equipamentoId,
-                                method: 'GET',
-                                data: {
-                                    status: novoStatus
-                                },
-                                success: function(response) {
-                                    //alert(response.message);
-                                    window.location.reload();
-                                },
-                                error: function(xhr, status, error) {
-                                    //alert(xhr.responseText);
-                                    window.location.reload();
-                                }
-                            });
-                        });
-                    });
-                </script>
-
-
-
             @endforeach
         @else
             <p>Nenhuma ordem de serviço encontrada.</p>

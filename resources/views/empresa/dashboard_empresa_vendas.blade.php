@@ -363,53 +363,205 @@
 
 
                             <div class="container p-4">
-                                <div class="row">
-                                    <div class="col-md-8">
-                                        <form
-                                            action="{{ route('dashboard_vendas_busca_os', ['empresa' => $empresa->name]) }}"
-                                            method="POST">
-                                            @csrf
-                                            <label>Nº da ordem de serviço:</label>
-                                            <div class="form-group input-group">
-                                                <input type="text" class="form-control" id="id_ordem"
-                                                    name="id_ordem" placeholder="Código da ordem de serviço" required>
-                                                <div class="input-group-append">
-                                                    <button class="btn bg-primary" type="submit"><i
-                                                            class="fa-solid fa-plus"></i></button>
-                                                </div>
-                                            </div>
-                                        </form>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <table class="table p-4 mt-4">
-                                                    <tbody>
-                                                        <tr>
-                                                            <th style="border: none; font-size: 20px;">Total</th>
-                                                            <td id="subtotal" style="border: none; font-size: 20px;">R$
-                                                                {{ number_format($sumTotalOrdem, 2, ',', '.') }}</td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                                <button class="btn bg-primary col-12 mt-3" data-toggle="modal"
-                                                    data-target="#modalPagamento">FINALIZAR VENDA</button>
-                                            </div>
+                                <form action="{{ route('dashboard_vendas_busca_os', ['empresa' => $empresa->name]) }}" method="POST">
+                                    @csrf
+                                    <label>Nº da ordem de serviço:</label>
+                                    <div class="form-group input-group">
+                                        <input type="text" class="form-control" id="id_ordem"
+                                            name="id_ordem" placeholder="Código da ordem de serviço" required>
+                                        <div class="input-group-append">
+                                            <button class="btn bg-primary" type="submit"><i
+                                                    class="fa-solid fa-plus"></i></button>
                                         </div>
                                     </div>
-                                </div>
+                                </form>
                             </div>
 
 
 
-                            <div class="modal fade" id="modalPagamento" tabindex="-1" role="dialog"
+
+                            @if ($vendasOrdem->isNotEmpty())
+
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table  p-3" style="font-size: 18px;">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="align-middle text-center">Nº ordem</th>
+                                                            <th class="align-middle text-center">Equipamento</th>
+                                                            <th class="align-middle text-center">Total</th>
+                                                            <th class="align-middle text-center">Desconto</th>
+                                                            <th class="align-middle text-center">SubTotal</th>
+                                                            <th class="align-middle text-center">Valor Restante</th>
+                                                            <th class="align-middle text-center">Valor Pago</th>
+                                                            <th class="align-middle text-center">Ações</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @php
+                                                        $total = 0; // Inicialize o total como zero
+                                                        $subtotal = 0; // Inicialize o subtotal como zero
+                                                    @endphp
+                                                    
+                                                    @foreach ($vendasOrdem as $venda)
+                                                        @php
+                                                            // Adiciona o valor com desconto ao subtotal
+                                                            $subtotal += $venda->valorComDesconto;
+                                                    
+                                                            // Calcula o valor restante
+                                                            $valorRestante = $venda->valorComDesconto - $venda->valorPago;
+                                                    
+                                                            // Se o valor restante for zero, adicione o valor com desconto diretamente ao total
+                                                            if ($valorRestante == 0) {
+                                                                $total += $venda->valorComDesconto;
+                                                            } else {
+                                                                // Adiciona o valor restante ao total
+                                                                if ($venda->valorComDesconto < 0) {
+                                                                    $total += $valorRestante;
+                                                                } else {
+                                                                    $total -= $valorRestante;
+                                                                }
+                                                            }
+                                                        @endphp
+                                                            <tr>
+                                                                <form
+                                                                    action="{{ route('dashboard_vendas_request_ordem_concluidas', ['empresa' => $empresa->name]) }}"
+                                                                    method="POST" id="form_vendas_Ordem">
+                                                                    @csrf
+
+
+                                                                    <input type="hidden" name="cod_os"
+                                                                        value="{{ $venda->cod_os }}">
+                                                                    <input type="hidden" name="cliente_os"
+                                                                        value="{{ $venda->cliente_os }}">
+                                                                    <input type="hidden" name="desconto"
+                                                                        value="{{ session('desconto') }}">
+                                                                    <input type="hidden" name="valor_total"
+                                                                        value="{{ $venda->valorTotal }}">
+                                                                    <input type="hidden" name="valor_pago"
+                                                                        value="{{ session('valor_pago') }}">
+                                                                    <input type="hidden" name="parcelas"
+                                                                        value="{{ session('parcelas') }}">
+                                                                    <input type="hidden" name="tipo_pagamento"
+                                                                        value="{{ session('tipo_pagamento') }}">
+
+
+                                                                </form>
+                                                                <td class="align-middle text-center">{{ $venda->cod_os }}</td>
+                                                                <td class="align-middle text-center">{{ $venda->equipamentoOS->equipamento }}</td>
+                                                                <td class="align-middle text-center">R${{ number_format($venda->valorTotal, 2, ',', '.') }}</td>
+                                                                <td class="align-middle text-center"><span class="badge badge-pill bg-danger">{{ $venda->desconto }}%</span></td>
+                                                                <td class="align-middle text-center">R${{ number_format($venda->valorComDesconto, 2, ',', '.') }}</td>
+
+                                                                <td class="align-middle text-center">
+                                                                    @if($venda->valorTroco < 0)
+                                                                        <span class="badge badge-pill bg-danger">R${{ number_format($venda->valorTroco, 2, ',', '.') }}</span>
+                                                                    @else
+                                                                        <span class="badge badge-pill bg-success">R${{ number_format($venda->valorTroco, 2, ',', '.') }}</span>
+                                                                    @endif
+                                                                </td>
+
+                                                                <td class="align-middle text-center">
+                                                                    R${{ number_format($venda->valorPago, 2, ',', '.') }}
+                                                                    <p>{{ $venda->updated_at->format('d/m/Y \a\s H:i:s') }}</p>
+                                                                </td>
+                                                                <td class="align-middle text-center">
+
+
+                                                                    <!-- EXCLUIR TERCEIRO -->
+                                                                    <button type="button" class="btn btn-danger"
+                                                                        data-toggle="modal"
+                                                                        data-target="#excluirdados{{ $venda->id }}"
+                                                                        data-toggle="tooltip"
+                                                                        title="Excluir ordem de serviço">
+                                                                        <i class="fa-solid fa-trash-can"></i>
+                                                                    </button>
+
+                                                                    <div class="modal fade"
+                                                                        id="excluirdados{{ $venda->id }}"
+                                                                        tabindex="-1" role="dialog"
+                                                                        aria-labelledby="excluirdados{{ $venda->id }}"
+                                                                        aria-hidden="true">
+                                                                        <div class="modal-dialog" role="document">
+                                                                            <div class="modal-content">
+                                                                                <div class="modal-header">
+                                                                                    <h5 class="modal-title"
+                                                                                        id="excluirdados{{ $venda->id }}">
+                                                                                        Confirmar Exclusão</h5>
+                                                                                    <button type="button" class="close"
+                                                                                        data-dismiss="modal"
+                                                                                        aria-label="Fechar">
+                                                                                        <span
+                                                                                            aria-hidden="true">&times;</span>
+                                                                                    </button>
+                                                                                </div>
+                                                                                <div class="modal-body">
+                                                                                    Tem certeza de que deseja excluir a
+                                                                                    ordem do cliente
+                                                                                    "{{ $venda->cliente_os }}"?
+                                                                                </div>
+                                                                                <div class="modal-footer">
+                                                                                    <button type="button"
+                                                                                        class="btn btn-secondary"
+                                                                                        data-dismiss="modal">CANCELAR</button>
+                                                                                    <form
+                                                                                        action="{{ route('dashboard_vendas_deletar_os', ['empresa' => $empresa->name, 'id' => $venda->id]) }}"
+                                                                                        method="POST">
+                                                                                        @csrf
+                                                                                        <button type="submit"
+                                                                                            class="btn bg-danger">EXCLUIR</button>
+                                                                                    </form>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <!-- FIM EXCLUIR TERCEIRO -->
+
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="col-md-4" style="float: right;">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h4 class="card-title">Resumo da Venda</h4>
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered">
+                                                    <tbody>
+                                                        <tr>
+                                                            <th>Total:</th>
+                                                            <td>R$ {{ number_format($subtotal, 2, ',', '.') }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Restante:</th>
+                                                            <td>R$ {{ $total < 0 ? number_format(-$total, 2, ',', '.') : number_format($total, 2, ',', '.') }}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <button class="btn btn-primary btn-block mt-3" data-toggle="modal" data-target="#modalPagamento">Finalizar Venda</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+
+                                <div class="modal fade" id="modalPagamento" tabindex="-1" role="dialog"
                                 aria-labelledby="modalPagamentoLabel" aria-hidden="true">
                                 <div class="modal-dialog modal-lg" role="document">
                                     <div class="modal-content">
                                         <div class="modal-header">
                                             <button class="btn bg-success" id="modalPagamentoLabel"
                                                 style="font-size: 20px;">Total R$ <span
-                                                    id="TotalOrdem">{{ $sumTotalOrdem }}</span></button>
+                                                    id="TotalOrdem">{{ $subtotal }}</span></button>
                                             <button type="button" class="close" data-dismiss="modal"
                                                 aria-label="Close">
                                                 <span aria-hidden="true">&times;</span>
@@ -485,124 +637,6 @@
 
 
                             </div>
-                            @if ($vendasOrdem->isNotEmpty())
-
-                                <div class="col-md-12">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <div class="table-responsive">
-                                                <table class="table  p-3" style="font-size: 18px;">
-                                                    <thead>
-                                                        <tr>
-                                                            <th class="align-middle">Nº ordem</th>
-                                                            <th class="align-middle">Cliente</th>
-                                                            <th class="align-middle">Listagem</th>
-                                                            <th class="align-middle">Terceiros</th>
-                                                            <th class="align-middle">Mão de obra</th>
-                                                            <th class="align-middle">Total</th>
-                                                            <th class="align-middle">Ações</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach ($vendasOrdem as $venda)
-                                                            <tr>
-                                                                <form
-                                                                    action="{{ route('dashboard_vendas_request_ordem_concluidas', ['empresa' => $empresa->name]) }}"
-                                                                    method="POST" id="form_vendas_Ordem">
-                                                                    @csrf
-
-
-                                                                    <input type="hidden" name="cod_os"
-                                                                        value="{{ $venda->cod_os }}">
-                                                                    <input type="hidden" name="cliente_os"
-                                                                        value="{{ $venda->cliente_os }}">
-                                                                    <input type="hidden" name="desconto"
-                                                                        value="{{ session('desconto') }}">
-                                                                    <input type="hidden" name="valor_total"
-                                                                        value="{{ $venda->total }}">
-                                                                    <input type="hidden" name="valor_pago"
-                                                                        value="{{ session('valor_pago') }}">
-                                                                    <input type="hidden" name="parcelas"
-                                                                        value="{{ session('parcelas') }}">
-                                                                    <input type="hidden" name="tipo_pagamento"
-                                                                        value="{{ session('tipo_pagamento') }}">
-
-
-                                                                </form>
-                                                                <td class="align-middle">{{ $venda->cod_os }}</td>
-                                                                <td class="align-middle">{{ $venda->cliente_os }}</td>
-                                                                <td class="align-middle">R$
-                                                                    {{ number_format($venda->ordemServico->carrinhos()->sum('valor'), 2, ',', '.') }}
-                                                                </td>
-                                                                <td class="align-middle">R$
-                                                                    {{ number_format($venda->ordemServico->terceiros()->sum('valor'), 2, ',', '.') }}
-                                                                </td>
-                                                                <td class="align-middle">R$
-                                                                    {{ number_format($venda->ordemServico->maoDeObras()->sum('valor'), 2, ',', '.') }}
-                                                                </td>
-                                                                <td class="align-middle">R$
-                                                                    {{ number_format($venda->total, 2, ',', '.') }}</td>
-                                                                <td class="align-middle">
-
-
-                                                                    <!-- EXCLUIR TERCEIRO -->
-                                                                    <button type="button" class="btn btn-danger"
-                                                                        data-toggle="modal"
-                                                                        data-target="#excluirdados{{ $venda->id }}"
-                                                                        data-toggle="tooltip"
-                                                                        title="Excluir ordem de serviço">
-                                                                        <i class="fa-solid fa-trash-can"></i>
-                                                                    </button>
-
-                                                                    <div class="modal fade"
-                                                                        id="excluirdados{{ $venda->id }}"
-                                                                        tabindex="-1" role="dialog"
-                                                                        aria-labelledby="excluirdados{{ $venda->id }}"
-                                                                        aria-hidden="true">
-                                                                        <div class="modal-dialog" role="document">
-                                                                            <div class="modal-content">
-                                                                                <div class="modal-header">
-                                                                                    <h5 class="modal-title"
-                                                                                        id="excluirdados{{ $venda->id }}">
-                                                                                        Confirmar Exclusão</h5>
-                                                                                    <button type="button" class="close"
-                                                                                        data-dismiss="modal"
-                                                                                        aria-label="Fechar">
-                                                                                        <span
-                                                                                            aria-hidden="true">&times;</span>
-                                                                                    </button>
-                                                                                </div>
-                                                                                <div class="modal-body">
-                                                                                    Tem certeza de que deseja excluir a
-                                                                                    ordem do cliente
-                                                                                    "{{ $venda->cliente_os }}"?
-                                                                                </div>
-                                                                                <div class="modal-footer">
-                                                                                    <button type="button"
-                                                                                        class="btn btn-secondary"
-                                                                                        data-dismiss="modal">CANCELAR</button>
-                                                                                    <form
-                                                                                        action="{{ route('dashboard_vendas_deletar_os', ['empresa' => $empresa->name, 'id' => $venda->id]) }}"
-                                                                                        method="POST">
-                                                                                        @csrf
-                                                                                        <button type="submit"
-                                                                                            class="btn bg-danger">EXCLUIR</button>
-                                                                                    </form>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                    <!-- FIM EXCLUIR TERCEIRO -->
-
-                                                                </td>
-                                                            </tr>
-                                                        @endforeach
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
 
                             @endif
 
@@ -742,13 +776,7 @@
                                                                                                     <div class="modal-body conteudoParaImprimir"
                                                                                                         id="conteudoParaImprimir_{{ $venda->id }}">
 
-                                                                                                        <div
-                                                                                                            class="container col-11">
-                                                                                                            <div
-                                                                                                                class="container col-12 d-flex align-items-center mt-5">
-                                                                                                                <h3>GARANTIA
-                                                                                                                </h3>
-                                                                                                            </div>
+                                                                                                        <div class="container col-11">
                                                                                                             <!-- Cabeçalho da Empresa -->
                                                                                                             <div
                                                                                                                 class="row mb-2">
@@ -914,7 +942,7 @@
                                                                                                                                         <td>{{ $vendaProduto->qtd_produto }}
                                                                                                                                         </td>
                                                                                                                                         <td>R$
-                                                                                                                                            {{ number_format($vendaProduto->produto->pvenda, 2, ',', '.') }}
+                                                                                                                                            {{ $vendaProduto->transactions->valorTotal }}
                                                                                                                                         </td>
                                                                                                                                     </tr>
                                                                                                                                 @endforeach
@@ -923,25 +951,61 @@
                                                                                                                     </div>
                                                                                                                 </div>
 
-                                                                                                                <!-- Subtotal e Botão de Envio -->
-                                                                                                                <div
-                                                                                                                    class="row mb-2">
-                                                                                                                    <div
-                                                                                                                        class="col-md-6 offset-md-6">
-                                                                                                                        <div
-                                                                                                                            class="row mb-3">
-                                                                                                                            <div
-                                                                                                                                class="col-md-6 text-right">
+                                                                                                                <!-- Subtotal, Desconto e Total -->
+                                                                                                                <div class="row mb-2">
+                                                                                                                    <div class="col-md-8" style="align-items: left;">
+                                                                                                                        <div class="row mb-3">
+                                                                                                                            <!-- Desconto -->
+                                                                                                                            <div class="col-md-6">
+                                                                                                                                <strong>Desconto:</strong>
+                                                                                                                            </div>
+                                                                                                                            <div class="col-md-6">
+                                                                                                                                {{ $vendaProduto->transactions->desconto_porcentagem }}%
+                                                                                                                            </div>
+                                                                                                                        </div>
+                                                                                                                        <div class="row mb-3">
+                                                                                                                            <!-- Subtotal -->
+                                                                                                                            <div class="col-md-6">
                                                                                                                                 <strong>Subtotal:</strong>
                                                                                                                             </div>
-                                                                                                                            <div
-                                                                                                                                class="col-md-6">
-                                                                                                                                R$
-                                                                                                                                {{ number_format($total, 2, ',', '.') }}
+                                                                                                                            <div class="col-md-6">
+                                                                                                                                @php 
+                                                                                                                                    $valorTotal = $vendaProduto->transactions->valorTotal;
+                                                                                                                                    $descontoPorcentagem = $vendaProduto->transactions->desconto_porcentagem;
+                                                                                                                                    $valorDesconto = $valorTotal * ($descontoPorcentagem / 100);
+
+                                                                                                                                    $totalComDesconto = $valorTotal - $valorDesconto;
+
+                                                                                                                                    $totalFormatado = number_format($totalComDesconto, 2, ',', '.');
+                                                                                                                                @endphp
+                                                                                                                                R$ {{ $totalFormatado }}
+                                                                                                                            </div>
+                                                                                                                        </div>
+                                                                                                                        <div class="row mb-3">
+                                                                                                                            <!-- Total -->
+                                                                                                                            <div class="col-md-6">
+                                                                                                                                <strong>Total pago:</strong>
+                                                                                                                            </div>
+                                                                                                                            <div class="col-md-6">
+                                                                                                                                R$ {{ number_format($vendaProduto->transactions->valorPago, 2, ',', '.') }}
+                                                                                                                            </div>
+                                                                                                                        </div>
+                                                                                                                        <div class="row mb-3">
+                                                                                                                            <!-- Total -->
+                                                                                                                            <div class="col-md-6">
+                                                                                                                                <strong>Meio de pagamento:</strong>
+                                                                                                                            </div>
+                                                                                                                            <div class="col-md-6">
+                                                                                                                                @if($vendaProduto->transactions->tipo_pagamento == 'CARTAO_CREDITO' || $vendaProduto->transactions->tipo_pagamento == 'BOLETO_PARCELADO')
+                                                                                                                                    {{ $vendaProduto->transactions->tipo_pagamento }} - {{ $vendaProduto->transactions->parcelas }}x R$ {{ number_format($vendaProduto->transactions->valorPago / $vendaProduto->transactions->parcelas, 2, ',', '.') }}
+                                                                                                                                @else
+                                                                                                                                    {{ $vendaProduto->transactions->tipo_pagamento }}
+                                                                                                                                @endif
                                                                                                                             </div>
                                                                                                                         </div>
                                                                                                                     </div>
                                                                                                                 </div>
+
                                                                                                         </div>
                                                                                                         @foreach ($vendasPorTransacao as $item)
                                                                                                             <input
@@ -1159,8 +1223,7 @@
                             $('#parcelasRevendaContainerOrdem').hide();
                             $('#descontoContainerOrdem').show();
 
-                            var sumTotal = parseFloat(
-                                "{{ $sumTotalOrdem }}"); // Substitua 1000 pelo valor total real
+                            var sumTotal = parseFloat("{{ $subtotal ?? 0 }}"); // Substitua 1000 pelo valor total real
                             var desconto = parseFloat($('#DescontoOrdem').val()) ||
                                 0; // Se o campo de desconto estiver vazio, considera desconto como 0
                             adicionarParcelas(sumTotal, $('#parcelasOrdem'), desconto);
@@ -1177,7 +1240,7 @@
 
                             $('#select_revendaOrdem').change(function() {
                                 var desconto = parseFloat($(this).find(':selected').data('desconto'));
-                                var sumTotal = parseFloat("{{ $sumTotalOrdem }}");
+                                var sumTotal = parseFloat("{{ $subtotal ?? 0 }}");
                                 adicionarParcelas(sumTotal, $('#parcelasOrdem'), desconto);
                                 $('#TotalOrdem').text((sumTotal * (1 - (desconto / 100))).toFixed(2));
                                 $('#desconto_aplicadoOrdem').val((sumTotal * (1 - (desconto / 100)).toFixed(
@@ -1191,7 +1254,7 @@
                             $('#descontoContainerOrdem').show();
 
                             var sumTotal = parseFloat(
-                                "{{ $sumTotalOrdem }}"); // Substitua 1000 pelo valor total real
+                                "{{ $subtotal ?? 0 }}"); // Substitua 1000 pelo valor total real
                             $('#TotalOrdem').text(sumTotal.toFixed(2)); // Exibe o valor total sem desconto
                             $('#desconto_aplicadoOrdem').val(sumTotal.toFixed(
                                 2)); // Exibe o valor total sem desconto
@@ -1205,7 +1268,7 @@
 
                     $('#DescontoOrdem').keyup(function() {
                         var valorDesconto = parseFloat($(this).val());
-                        var sumTotal = parseFloat("{{ $sumTotalOrdem }}"); // Substitua 1000 pelo valor total real
+                        var sumTotal = parseFloat("{{ $subtotal ?? 0 }}"); // Substitua 1000 pelo valor total real
                         var tipoPagamento = $('#tipo_pagamentoOrdem').val();
                         if (tipoPagamento == 'BOLETO_PARCELADO' || tipoPagamento == 'CARTAO_CREDITO' ||
                             tipoPagamento == 'REVENDA') {

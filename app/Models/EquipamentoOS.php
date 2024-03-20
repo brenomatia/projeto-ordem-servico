@@ -23,20 +23,22 @@ class EquipamentoOS extends Model
         'status',
         'q_aut',
         
-        'valor_autorizado',
-        'valor_final_autorizado',
-        'valor_pago_autorizado',
-        'tipo_pagamento_autorizado',
+        'MeioPagamento',
+        'valorTotal',
+        'desconto',
+        'valorComDesconto',
+        'valorPago',
+        'valorTroco',
+        'parcelaTotal',
+        'valorParcelas',
 
-        'aguardando_pcs_data',
-        'aguardando_pcs_obs',
-        'os_nao_autorizada_obs',
+        'pedidoPecas',
+        'entregaPecas',
+        'pedidoOBS',
 
-        'data_compra_garantia',
-        'vendido_por_garantia',
-        'defeito_garantia',
-        'nfe_garantia',
-        'uso_profissional_garantia',
+        'substatus',
+        'obs_naoautorizado',
+        
     ];
 
     public function carrinhos()

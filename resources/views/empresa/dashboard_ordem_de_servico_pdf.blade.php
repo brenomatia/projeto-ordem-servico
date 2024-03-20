@@ -22,89 +22,71 @@
 
     <div class="row mt-4">
         <div class="col-md-12">
-            <h4>Itens da Ordem de Serviço</h4>
-            @php
-                $total = 0;
-                $restantes = [];
-            @endphp
             @foreach($itens as $item)
-                @php
-                    $subtotal = $item->carrinhos()->sum('valor') + $item->terceiro()->sum('valor') + $item->maodeobra()->sum('valor');
-                    if($item->tipo_pagamento_autorizado != null){
-                        $subtotal = 0;
-                    }
-                    $total += $subtotal;
-                    $restante = $item->valor_final_autorizado - $item->valor_pago_autorizado;
-                    if ($restante > 0) {
-                        $restantes[] = $restante;
-                    }
-                @endphp
+
                 <div class="card mb-3">
                     <div class="card-header bg-dark">
                         <h5 class="card-title text-white">{{ $item->equipamento }}</h5>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body text-center">
                         <div class="row">
                             <div class="col-md-4 mb-3">
-                                <label>Listagem</label>
-                                <p><strong>Total:</strong> R$ {{ number_format($item->carrinhos()->sum('valor'), 2, ',', '.') }}</p>
-                                <label>Produtos:</label>
+                                <p><strong>Listagem</strong> - R$ {{ number_format($item->carrinhos()->sum('valor'), 2, ',', '.') }}</p>
+                                <label>Produtos</label>
                                 @foreach ($item->carrinhos as $cart)
                                     <p>{{ $cart->produto }}</p>
                                 @endforeach
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label>Terceiro</label>
-                                <p><strong>Total:</strong> R$ {{ number_format($item->terceiro()->sum('valor'), 2, ',', '.') }}</p>
-                                <label>Serviços:</label>
+                                <p><strong>Terceiros</strong> - R$ {{ number_format($item->terceiro()->sum('valor'), 2, ',', '.') }}</p>
+                                <label>Serviços</label>
                                 @foreach ($item->terceiro as $terceiro)
                                     <p>{{ $terceiro->tipo_servico }} - R$ {{ number_format($terceiro->valor, 2, ',', '.') }}</p>
                                 @endforeach
                             </div>
                             <div class="col-md-4 mb-3">
+                                <p><strong>Mão de Obra</strong> - R$ {{ number_format($item->maodeobra()->sum('valor'), 2, ',', '.') }}</p>
                                 <label>Mão de Obra</label>
-                                <p><strong>Total:</strong> R$ {{ number_format($item->maodeobra()->sum('valor'), 2, ',', '.') }}</p>
-                                <label>Mão de Obra:</label>
                                 @foreach ($item->maodeobra as $maodeobra)
                                     <p>{{ $maodeobra->tipo }} - R$ {{ number_format($maodeobra->valor, 2, ',', '.') }}</p>
                                 @endforeach
                             </div>
                         </div>
                     </div>
-                    <div class="card-footer rounded-bottom">
-                        @if($item->valor_final_autorizado != $item->valor_pago_autorizado)
-                        <div class="row">
-                            <div class="col-md-6">
-                            <label class="text-green">Pago: R$ {{  number_format($item->valor_pago_autorizado, 2, ',', '.') }}</label><br>
-                            <label class="text-red">Restante: R$ {{  number_format($restante, 2, ',', '.') }}</label>
-                            <p class="text-orange">Pagamento efetuado parcialmente.</p>
-                            <p><span class="text-muted">Tipo de pagamento: <strong>{{ $item->tipo_pagamento_autorizado }} em {{ $item->updated_at->format('d/m/Y H:i:s')}}</strong></span></p>
-                            </div>
-                            <div class="col-md-6 d-flex justify-content-center align-items-center">
-                                <a href="{{ route('dashboard_listar_items_ordem', ['empresa'=>$empresa->name, 'id_ordem'=>$ordem, 'id_equipamento'=>$item->id]) }}"><button class="btn bg-dark removerNaImpressao"><i class="fa-solid fa-magnifying-glass mr-2"></i> ANALISAR EQUIPAMENTO</button></a>
-                            </div>
-                        </div>
-                        @elseif(!empty($item->valor_final_autorizado) && !empty($item->valor_pago_autorizado))
-                            @if($item->valor_final_autorizado == $item->valor_pago_autorizado)
-                            <span class="text-green">pagamento total efetuado em {{ $item->updated_at->format('d/m/Y H:i:s')}}</span>
-                            @endif
+                    <div class="card-footer rounded-bottom" style="text-align: left!important;">
+                        @if($item->valorComDesconto == $item->valorPago)
+                            <p class="text-green"><strong>Equipamento pago!</strong> </p>
+                            <p class="text-muted">Em: {{ $item->updated_at->format('d/m/Y \a\s H:i:s') }}</p>
                         @else
-                            <label class="text-green">Subtotal: R$ {{  number_format($total, 2, ',', '.') }}</label><br>
+                            @if($item->valorTotal)
+                                <p><strong>Total:</strong> R$ {{ $item->valorTotal }}</span></p>
+                            @endif
+
+                            @if($item->desconto)
+                                <p class="text-red"><strong>Desconto:</strong> {{ $item->desconto }}%</span></p>
+                            @endif
+
+                            @if($item->valorComDesconto)
+                                <p><strong>subTotal:</strong> R$ {{ $item->valorComDesconto }}</span></p>
+                            @endif
+
+                            @if($item->valorPago)
+                                <p class="text-green"><strong>Pago:</strong> R$ {{ $item->valorPago }}</span></p>
+                            @endif
+
+                            @if($item->valorTroco < 0 )
+                                <p class="text-orange"><strong>Pagamento Pendente:</strong> R$ {{ $item->valorTroco }}</span></p>
+                            @endif
+
+                            <p class="text-muted">Em: {{ $item->updated_at->format('d/m/Y \a\s H:i:s') }}</p>
+                      
                         @endif
+
+
                     </div>
                 </div>
             @endforeach
-            @php
-                $total += array_sum($restantes);
-            @endphp
-            <div class="row mb-3 mt-1">
-                <div class="col-md-12">
-                    <div class="card p-3">
-                        TOTAL R$ {{ number_format($total, 2, ',', '.') }}
-                    </div>
-                    <button onclick="imprimirPDF()" type="button" class="btn btn-success mb-5 col-12 removerNaImpressao"><i class="fa-solid fa-file-pdf mr-2"></i>Imprimir PDF</button>
-                </div>
-            </div>
+<button onclick="imprimirPDF()" type="button" class="btn btn-success mb-5 col-12 removerNaImpressao"><i class="fa-solid fa-file-pdf mr-2"></i>Imprimir PDF</button>
         </div>
     </div>
 </div>

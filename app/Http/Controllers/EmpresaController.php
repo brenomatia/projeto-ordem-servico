@@ -525,36 +525,7 @@ class EmpresaController extends Controller
     }
 
 
-    public function dashboard_equipamentos(Request $request, $empresa)
-    {
-        // Busca o registro da empresa na tabela "companies" pelo nome informado na rota.
-        $empresa = Company::where('name', $empresa)->firstOrFail();
-        // Cria uma nova conexão com o banco de dados da empresa.
-        Config::set('database.connections.empresa', [
-            'driver' => 'mysql',
-            'host' => $empresa->database_host,
-            'port' => $empresa->database_port,
-            'database' => $empresa->database_name,
-            'username' => $empresa->database_username,
-            'password' => $empresa->database_password,
-            'charset' => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-            'prefix' => '',
-            'strict' => true,
-            'engine' => null,
-        ]);
-        // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
-        DB::setDefaultConnection('empresa');
 
-        if (!$request->user()) {
-            return redirect("/empresa/$empresa->name")->with('error', 'Você precisa fazer login para acessar essa página.');
-        }
-
-        $equipamentos = Equipamento::paginate(10);
-        $marcas = Marca::paginate(10);
-
-        return view('empresa.dashboard_cadastro_equipamentos', compact('empresa', 'equipamentos', 'marcas'));
-    }
 
     public function dashboard_revendas(Request $request, $empresa)
     {
@@ -669,227 +640,6 @@ class EmpresaController extends Controller
         }
 
         return view('empresa.dashboard_metricas', compact('empresa'));
-    }
-
-
-    public function dashboard_equipamentos_cadastro(Request $request, $empresa)
-    {
-        // Busca o registro da empresa na tabela "companies" pelo nome informado na rota.
-        $empresa = Company::where('name', $empresa)->firstOrFail();
-        // Cria uma nova conexão com o banco de dados da empresa.
-        Config::set('database.connections.empresa', [
-            'driver' => 'mysql',
-            'host' => $empresa->database_host,
-            'port' => $empresa->database_port,
-            'database' => $empresa->database_name,
-            'username' => $empresa->database_username,
-            'password' => $empresa->database_password,
-            'charset' => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-            'prefix' => '',
-            'strict' => true,
-            'engine' => null,
-        ]);
-        // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
-        DB::setDefaultConnection('empresa');
-
-        if (!$request->user()) {
-            return redirect("/empresa/$empresa->name")->with('error', 'Você precisa fazer login para acessar essa página.');
-        }
-
-        // Tente encontrar um equipamento com o mesmo nome
-        $equipamento = Equipamento::where('nome_equipamento', $request->nome_equipamento)->first();
-
-        if ($equipamento) {
-            // Se o equipamento com o mesmo nome já existir, emita uma mensagem de aviso ou tome alguma outra ação necessária
-            return back()->with('error', 'Equipamento ja cadastrado!');
-        } else {
-            // Se o equipamento não existir, crie um novo
-            Equipamento::create([
-                'nome_equipamento' => $request->nome_equipamento,
-            ]);
-        }
-
-
-        return back()->with('success', 'Equipamento cadastrado com sucesso!');
-    }
-
-
-    public function dashboard_marca_cadastro(Request $request, $empresa)
-    {
-        // Busca o registro da empresa na tabela "companies" pelo nome informado na rota.
-        $empresa = Company::where('name', $empresa)->firstOrFail();
-        // Cria uma nova conexão com o banco de dados da empresa.
-        Config::set('database.connections.empresa', [
-            'driver' => 'mysql',
-            'host' => $empresa->database_host,
-            'port' => $empresa->database_port,
-            'database' => $empresa->database_name,
-            'username' => $empresa->database_username,
-            'password' => $empresa->database_password,
-            'charset' => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-            'prefix' => '',
-            'strict' => true,
-            'engine' => null,
-        ]);
-        // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
-        DB::setDefaultConnection('empresa');
-
-        if (!$request->user()) {
-            return redirect("/empresa/$empresa->name")->with('error', 'Você precisa fazer login para acessar essa página.');
-        }
-
-        // Tente encontrar um equipamento com o mesmo nome
-        $eq = Equipamento::find($request->id_equipamento);
-
-
-        Marca::create([
-            'marca' => $request->marca_equipamento,
-            'equipamento' => $eq->nome_equipamento,
-            'id_equipamento' => $eq->id,
-        ]);
-
-
-
-        return back()->with('success', 'Equipamento cadastrado com sucesso!');
-
-    }
-
-    public function dashboard_marca_deletar(Request $request, $empresa, $id)
-    {
-        // Busca o registro da empresa na tabela "companies" pelo nome informado na rota.
-        $empresa = Company::where('name', $empresa)->firstOrFail();
-        // Cria uma nova conexão com o banco de dados da empresa.
-        Config::set('database.connections.empresa', [
-            'driver' => 'mysql',
-            'host' => $empresa->database_host,
-            'port' => $empresa->database_port,
-            'database' => $empresa->database_name,
-            'username' => $empresa->database_username,
-            'password' => $empresa->database_password,
-            'charset' => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-            'prefix' => '',
-            'strict' => true,
-            'engine' => null,
-        ]);
-        // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
-        DB::setDefaultConnection('empresa');
-
-        if (!$request->user()) {
-            return redirect("/empresa/$empresa->name")->with('error', 'Você precisa fazer login para acessar essa página.');
-        }
-
-        $busca = Marca::find($id);
-        $busca->delete();
-
-
-        return back()->with('success', 'Marca deletada com sucesso!');
-    }
-
-    public function dashboard_equipamento_deletar(Request $request, $empresa, $id)
-    {
-        // Busca o registro da empresa na tabela "companies" pelo nome informado na rota.
-        $empresa = Company::where('name', $empresa)->firstOrFail();
-        // Cria uma nova conexão com o banco de dados da empresa.
-        Config::set('database.connections.empresa', [
-            'driver' => 'mysql',
-            'host' => $empresa->database_host,
-            'port' => $empresa->database_port,
-            'database' => $empresa->database_name,
-            'username' => $empresa->database_username,
-            'password' => $empresa->database_password,
-            'charset' => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-            'prefix' => '',
-            'strict' => true,
-            'engine' => null,
-        ]);
-        // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
-        DB::setDefaultConnection('empresa');
-
-        if (!$request->user()) {
-            return redirect("/empresa/$empresa->name")->with('error', 'Você precisa fazer login para acessar essa página.');
-        }
-
-        $busca = Equipamento::find($id);
-        $busca->delete();
-
-
-        return back()->with('success', 'Equipamento deletado com sucesso!');
-    }
-
-    public function dashboard_atualizar_equipamentos(Request $request, $empresa, $id)
-    {
-        // Busca o registro da empresa na tabela "companies" pelo nome informado na rota.
-        $empresa = Company::where('name', $empresa)->firstOrFail();
-        // Cria uma nova conexão com o banco de dados da empresa.
-        Config::set('database.connections.empresa', [
-            'driver' => 'mysql',
-            'host' => $empresa->database_host,
-            'port' => $empresa->database_port,
-            'database' => $empresa->database_name,
-            'username' => $empresa->database_username,
-            'password' => $empresa->database_password,
-            'charset' => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-            'prefix' => '',
-            'strict' => true,
-            'engine' => null,
-        ]);
-        // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
-        DB::setDefaultConnection('empresa');
-
-        if (!$request->user()) {
-            return redirect("/empresa/$empresa->name")->with('error', 'Você precisa fazer login para acessar essa página.');
-        }
-
-        $equipamento = Equipamento::find($id);
-        $equipamento->nome_equipamento = $request->nome_equipamento;
-        $equipamento->marca = $request->marca;
-        $equipamento->save();
-
-        if ($equipamento) {
-            return back()->with('success', 'Equipamento atualizado com sucesso!');
-        }
-
-
-    }
-
-    public function dashboard_deletar_equipamento(Request $request, $empresa, $id)
-    {
-        // Busca o registro da empresa na tabela "companies" pelo nome informado na rota.
-        $empresa = Company::where('name', $empresa)->firstOrFail();
-        // Cria uma nova conexão com o banco de dados da empresa.
-        Config::set('database.connections.empresa', [
-            'driver' => 'mysql',
-            'host' => $empresa->database_host,
-            'port' => $empresa->database_port,
-            'database' => $empresa->database_name,
-            'username' => $empresa->database_username,
-            'password' => $empresa->database_password,
-            'charset' => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-            'prefix' => '',
-            'strict' => true,
-            'engine' => null,
-        ]);
-        // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
-        DB::setDefaultConnection('empresa');
-
-        if (!$request->user()) {
-            return redirect("/empresa/$empresa->name")->with('error', 'Você precisa fazer login para acessar essa página.');
-        }
-
-        $equipamento = Equipamento::find($id);
-        $equipamento->delete();
-
-        if ($equipamento) {
-            return back()->with('success', 'Equipamento deletado com sucesso!');
-        }
-
-
     }
 
     public function dashboard_cadastro_revendas(Request $request, $empresa)
@@ -1432,7 +1182,9 @@ class EmpresaController extends Controller
             return redirect("/empresa/$empresa->name")->with('error', 'Você precisa fazer login para acessar essa página.');
         }
 
-        $equipamentos = Equipamento::all();
+        $equipamento = EquipamentoOS::find($id_equipamento);
+
+     
         $terceiros = Terceiro::where('id_equipamento_permitido', $id_equipamento)->get();
         $carrinhos = Carrinho::where('id_equipamento_permitido', $id_equipamento)->get();
         $maodeobras = MaoDeObra::where('id_equipamento_permitido', $id_equipamento)->get();
@@ -1454,8 +1206,11 @@ class EmpresaController extends Controller
         $sumTotal = ($sumListagem + $sumTerceiro) + $sumMao;
 
         $OrdemServico = OrdemServico::find($id_ordem);
+        
 
-        return view('empresa.dashboard_os_listagem', compact('OrdemServico', 'empresa', 'id_ordem', 'id_equipamento', 'equipamentos', 'terceiros', 'carrinhos', 'maodeobras', 'anotacaoConteudo', 'sumListagem', 'sumTerceiro', 'sumMao', 'sumTotal'));
+        
+
+        return view('empresa.dashboard_os_listagem', compact('equipamento', 'OrdemServico', 'empresa', 'id_ordem', 'id_equipamento', 'terceiros', 'carrinhos', 'maodeobras', 'anotacaoConteudo', 'sumListagem', 'sumTerceiro', 'sumMao', 'sumTotal'));
     }
 
     public function dashboard_ordem_atualizar_dados(Request $request, $empresa, $id_ordem)
@@ -1641,16 +1396,6 @@ class EmpresaController extends Controller
             // Atualizar o status da ordem de serviço com base no valor recebido da requisição
             $equipamento->status = $request->status;
             $equipamento->q_aut = Auth::user()->name;
-
-            if ($request->status == "NÃO AUTORIZADO") {
-
-                // Excluir registros em outras tabelas relacionadas ao equipamento
-                Carrinho::where('id_equipamento_permitido', $id)->delete();
-                Terceiro::where('id_equipamento_permitido', $id)->delete();
-                MaoDeObra::where('id_equipamento_permitido', $id)->delete();
-
-            }
-
             // Salvar as alterações no equipamento
             $equipamento->save();
 
@@ -2291,76 +2036,6 @@ class EmpresaController extends Controller
         }
     }
 
-    public function dashboard_equipamento_atualizar_dados(Request $request, $empresa, $id)
-    {
-        // Busca o registro da empresa na tabela "companies" pelo nome informado na rota.
-        $empresa = Company::where('name', $empresa)->firstOrFail();
-        // Cria uma nova conexão com o banco de dados da empresa.
-        Config::set('database.connections.empresa', [
-            'driver' => 'mysql',
-            'host' => $empresa->database_host,
-            'port' => $empresa->database_port,
-            'database' => $empresa->database_name,
-            'username' => $empresa->database_username,
-            'password' => $empresa->database_password,
-            'charset' => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-            'prefix' => '',
-            'strict' => true,
-            'engine' => null,
-        ]);
-        // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
-        DB::setDefaultConnection('empresa');
-
-        if (!$request->user()) {
-            return redirect("/empresa/$empresa->name")->with('error', 'Você precisa fazer login para acessar essa página.');
-        }
-
-        $att = Equipamento::find($id);
-        $att->nome_equipamento = $request->nome_equipamento;
-        $att->save();
-
-        if ($att) {
-            return back()->with('success', 'O equipamento foi atualizado com sucesso!');
-        }
-
-    }
-
-    public function dashboard_marca_atualizar(Request $request, $empresa, $id)
-    {
-        // Busca o registro da empresa na tabela "companies" pelo nome informado na rota.
-        $empresa = Company::where('name', $empresa)->firstOrFail();
-        // Cria uma nova conexão com o banco de dados da empresa.
-        Config::set('database.connections.empresa', [
-            'driver' => 'mysql',
-            'host' => $empresa->database_host,
-            'port' => $empresa->database_port,
-            'database' => $empresa->database_name,
-            'username' => $empresa->database_username,
-            'password' => $empresa->database_password,
-            'charset' => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-            'prefix' => '',
-            'strict' => true,
-            'engine' => null,
-        ]);
-        // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
-        DB::setDefaultConnection('empresa');
-
-        if (!$request->user()) {
-            return redirect("/empresa/$empresa->name")->with('error', 'Você precisa fazer login para acessar essa página.');
-        }
-
-        $att = Marca::find($id);
-        $att->marca = $request->marca;
-        $att->save();
-
-        if ($att) {
-            return back()->with('success', 'A marca foi atualizada com sucesso!');
-        }
-
-    }
-
     public function dashboard_vendas(Request $request, $empresa)
     {
         // Busca o registro da empresa na tabela "companies" pelo nome informado na rota.
@@ -2388,7 +2063,7 @@ class EmpresaController extends Controller
 
 
         $vendasOrdem = CarrinhoOrdem::where('id_user', Auth::user()->id)->get();
-        $sumTotalOrdem = CarrinhoOrdem::where('id_user', Auth::user()->id)->sum('total');
+        $sumTotalOrdem = CarrinhoOrdem::where('id_user', Auth::user()->id)->sum('valorPago');
 
         $vendasProdutos = CarrinhoProdutos::where('id_user', Auth::user()->id)->get();
         $sumTotalProdutos = CarrinhoProdutos::where('id_user', Auth::user()->id)->sum('total');
@@ -2430,35 +2105,48 @@ class EmpresaController extends Controller
 
         $consulta_ordem = OrdemServico::find($request->id_ordem);
 
-        if ($consulta_ordem->status == 'FECHADA') {
-            return back()->with('error', 'Ordem de serviço ja processada!');
-        }
-
         if ($consulta_ordem) {
-
-            $sumCarrinhos = $consulta_ordem->carrinhos()->sum('valor');
-            $sumTerceiros = $consulta_ordem->terceiros()->sum('valor');
-            $sumMaodeobra = $consulta_ordem->MaoDeObras()->sum('valor');
-            $sumTotal = ($sumCarrinhos + $sumTerceiros) + $sumMaodeobra;
-
-            $selectProduct = CarrinhoOrdem::where('cod_os', $consulta_ordem->id)->where('id_user', Auth::user()->id)->first();
-
-            if ($selectProduct) {
-                return back()->with('error', 'Ordem de serviço ja esta em aberto!');
-            } else {
-                $newVenda = new CarrinhoOrdem();
-                $newVenda->id_user = Auth::user()->id;
-                $newVenda->cod_os = $request->id_ordem;
-                $newVenda->cliente_os = $consulta_ordem->nome_cliente;
-                $newVenda->total = $sumTotal;
-                $newVenda->save();
-
-                return back()->with('success', 'Entrada de ordem de serviço com sucesso!');
+            $equipamentosOS = EquipamentoOS::where('id_user', Auth::user()->id)
+                                            ->where('os_permitida', $consulta_ordem->id)
+                                            ->get();
+        
+            if ($equipamentosOS->isNotEmpty()) {
+                foreach ($equipamentosOS as $item) {
+                    // Crie uma nova instância de CarrinhoOrdem para cada item
+                    $new = new CarrinhoOrdem();
+                    
+                    // Preencha os dados relevantes do CarrinhoOrdem para este item
+                    $new->id_user = Auth::user()->id;
+                    $new->cod_os = $consulta_ordem->id; // ou algo assim, dependendo do que `id` representa
+                    $new->id_equipamento = $item->id; // ou outra maneira de obter o nome do cliente
+                    $new->nome_cliente = $item->ordemServico->nome_cliente; // ou outra maneira de obter o nome do cliente
+                    $new->tipo_pagamento = $item->MeioPagamento; // ou outra maneira de obter o tipo de pagamento
+                    $new->valorTotal = $item->valorTotal; // ou outra maneira de obter o valor total
+                    $new->desconto = $item->desconto; // ou outra maneira de obter o desconto
+                    $new->valorComDesconto = $item->valorComDesconto; // ou outra maneira de obter o valor com desconto
+                    $new->valorPago = $item->valorPago; // ou outra maneira de obter o valor pago
+                    $new->valorTroco = $item->valorTroco; // ou outra maneira de obter o valor do troco
+                    $new->qtdParcelas = $item->parcelaTotal; // ou outra maneira de obter a quantidade total de parcelas
+                    $new->valorParcelas = $item->valorParcelas; // ou outra maneira de obter o valor das parcelas
+                    // Adicione os demais campos conforme necessário
+                    // $new->campo = $item->valor;
+                    
+                    // Salve o CarrinhoOrdem para este item
+                    $new->save();
+                }
+            
+                return back()->with('success', 'Ordens de serviço listadas com sucesso!');
             }
-
-        } else {
-            return back()->with('error', 'Ordem de serviço não encontrada tente novamente!');
+            else 
+            {
+                return back()->with('error', 'Nenhum equipamento encontrado para esta ordem de serviço.');
+            }
+        } 
+        else 
+        {
+            return back()->with('error', 'Nº de ordem não localizado!');
         }
+        
 
     }
 
@@ -3166,9 +2854,164 @@ class EmpresaController extends Controller
             $garantiaItem->save();
         }
 
+
+        
         if ($new) {
             return back()->with('success', 'Garantia lançada com sucesso!');
         }
+
+    }
+
+    public function dashboard_processa_item(Request $request, $empresa, $id_ordem, $id_equipamento)
+    {
+        // Busca o registro da empresa na tabela "companies" pelo nome informado na rota.
+        $empresa = Company::where('name', $empresa)->firstOrFail();
+        // Cria uma nova conexão com o banco de dados da empresa.
+        Config::set('database.connections.empresa', [
+            'driver' => 'mysql',
+            'host' => $empresa->database_host,
+            'port' => $empresa->database_port,
+            'database' => $empresa->database_name,
+            'username' => $empresa->database_username,
+            'password' => $empresa->database_password,
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ]);
+        // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
+        DB::setDefaultConnection('empresa');
+
+        if (!$request->user()) {
+            return redirect("/empresa/$empresa->name")->with('error', 'Você precisa fazer login para acessar essa página.');
+        }
+        
+        //dd($request->all());
+
+        $new = EquipamentoOS::find($id_equipamento);
+        $new->q_aut = Auth::user()->name;
+        $new->MeioPagamento = $request->tipo_pagamentoProdutos;
+        $new->valorTotal = $request->valor_total;
+        $new->valorPago = $request->valorPago;
+        $new->valorTroco = $request->troco;
+        $new->desconto = $request->descontoProdutos;
+        $new->valorComDesconto = $request->total;
+        $new->parcelaTotal = $request->parcelas;
+
+        if($request->parcelas != null){
+            $resultado = $request->total / $request->parcelas;
+            $resultado_formatado = number_format($resultado, 2, '.', '');
+            $new->valorParcelas = $resultado_formatado;
+        }else{
+            $new->valorParcelas = $request->total;
+        }
+
+        $new->save();
+        
+        return back()->with('success', 'Item processado com sucesso!');
+
+    }
+
+    public function dashboard_aguardando_pecas(Request $request, $empresa, $id_ordem, $id_equipamento)
+    {
+        // Busca o registro da empresa na tabela "companies" pelo nome informado na rota.
+        $empresa = Company::where('name', $empresa)->firstOrFail();
+        // Cria uma nova conexão com o banco de dados da empresa.
+        Config::set('database.connections.empresa', [
+            'driver' => 'mysql',
+            'host' => $empresa->database_host,
+            'port' => $empresa->database_port,
+            'database' => $empresa->database_name,
+            'username' => $empresa->database_username,
+            'password' => $empresa->database_password,
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ]);
+        // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
+        DB::setDefaultConnection('empresa');
+
+        if (!$request->user()) {
+            return redirect("/empresa/$empresa->name")->with('error', 'Você precisa fazer login para acessar essa página.');
+        }
+
+        $att = EquipamentoOS::find($id_equipamento);
+        $att->pedidoPecas = $request->DataInicial;
+        $att->entregaPecas = $request->DataFinal;
+        $att->pedidoOBS = $request->aguardando_obs;
+        $att->save();
+
+        return back()->with('success', 'Datas de pedido de peças listados com sucesso!');
+
+    }
+
+    public function dashboard_substatus(Request $request, $empresa, $id_ordem, $id_equipamento)
+    {
+        // Busca o registro da empresa na tabela "companies" pelo nome informado na rota.
+        $empresa = Company::where('name', $empresa)->firstOrFail();
+        // Cria uma nova conexão com o banco de dados da empresa.
+        Config::set('database.connections.empresa', [
+            'driver' => 'mysql',
+            'host' => $empresa->database_host,
+            'port' => $empresa->database_port,
+            'database' => $empresa->database_name,
+            'username' => $empresa->database_username,
+            'password' => $empresa->database_password,
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ]);
+        // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
+        DB::setDefaultConnection('empresa');
+
+        if (!$request->user()) {
+            return redirect("/empresa/$empresa->name")->with('error', 'Você precisa fazer login para acessar essa página.');
+        }
+
+        $att = EquipamentoOS::find($id_equipamento);
+        $att->substatus = $request->checkbox;
+        $att->obs_naoautorizado = $request->obs_naoaut;
+        $att->save();
+
+        return back()->with('success', 'Dados atualizado com sucesso!');
+
+    }
+    public function dashboard_gen_protocolo(Request $request, $empresa, $id_ordem)
+    {
+        // Busca o registro da empresa na tabela "companies" pelo nome informado na rota.
+        $empresa = Company::where('name', $empresa)->firstOrFail();
+        // Cria uma nova conexão com o banco de dados da empresa.
+        Config::set('database.connections.empresa', [
+            'driver' => 'mysql',
+            'host' => $empresa->database_host,
+            'port' => $empresa->database_port,
+            'database' => $empresa->database_name,
+            'username' => $empresa->database_username,
+            'password' => $empresa->database_password,
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ]);
+        // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
+        DB::setDefaultConnection('empresa');
+        
+        if (!$request->user()) {
+            return redirect("/empresa/$empresa->name")->with('error', 'Você precisa fazer login para acessar essa página.');
+        }
+
+        $ordem = OrdemServico::where('id', $id_ordem)->first();
+        $itens = EquipamentoOS::where('os_permitida', $id_ordem)->where('id_user', Auth::user()->id)->get();
+
+
+
+        return view('empresa.dashboard_gen_protocolo', compact('empresa', 'ordem', 'itens', 'id_ordem'));
 
     }
 }

@@ -12,15 +12,19 @@ return new class extends Migration
         Schema::create('carrinho_ordem', function (Blueprint $table) {
             $table->id();
             $table->string('id_user')->nullable();
-
+            $table->string('id_equipamento')->nullable();
             $table->string('cod_os')->nullable();
-            $table->string('cliente_os')->nullable();
-
-            $table->string('revenda')->nullable();
-            $table->string('desconto')->nullable();
-
+            $table->string('nome_cliente')->nullable();
+            
             $table->string('tipo_pagamento')->nullable();
-            $table->decimal('total', 10, 2)->nullable();
+            $table->decimal('valorTotal', 10, 2)->nullable();
+            $table->string('desconto')->nullable();
+            $table->decimal('valorComDesconto', 10, 2)->nullable();
+            $table->decimal('valorPago', 10, 2)->nullable();
+            $table->decimal('valorTroco', 10, 2)->nullable();
+            $table->string('qtdParcelas')->nullable();
+            $table->decimal('valorParcelas', 10, 2)->nullable();
+
             $table->timestamps();
         });
     }

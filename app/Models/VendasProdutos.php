@@ -5,7 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Produto;
-use App\Models\GarantiaItens;
+use App\Models\TransactionsProdutos;
+use App\Models\GarantiaCliente;
 
 class VendasProdutos extends Model
 {
@@ -34,5 +35,9 @@ class VendasProdutos extends Model
     public function garantiacliente()
     {
         return $this->hasOne(GarantiaCliente::class, 'hash', 'hash_transaction');
+    }
+    public function transactions()
+    {
+        return $this->belongsTo(TransactionsProdutos::class, 'hash_transaction', 'hash_transaction');
     }
 }

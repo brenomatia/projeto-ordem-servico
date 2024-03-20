@@ -20,20 +20,22 @@ return new class extends Migration
             $table->string('status')->nullable();
             $table->string('q_aut')->nullable();
 
-            $table->decimal('valor_autorizado', 10, 2)->nullable();
-            $table->decimal('valor_final_autorizado', 10, 2)->nullable();
-            $table->decimal('valor_pago_autorizado', 10, 2)->nullable();
-            $table->string('tipo_pagamento_autorizado')->nullable();
+            $table->string('MeioPagamento')->nullable();
+            $table->decimal('valorTotal', 10, 2)->nullable();
+            $table->string('desconto')->nullable();
+            $table->decimal('valorComDesconto', 10, 2)->nullable();
+            $table->decimal('valorPago', 10, 2)->nullable();
+            $table->decimal('valorTroco', 10, 2)->nullable();
+            $table->string('parcelaTotal')->nullable();
+            $table->string('valorParcelas')->nullable();
 
-            $table->string('aguardando_pcs_data')->nullable();
-            $table->string('aguardando_pcs_obs')->nullable();
-            $table->string('os_nao_autorizada_obs')->nullable();
 
-            $table->string('data_compra_garantia')->nullable();
-            $table->string('vendido_por_garantia')->nullable();
-            $table->string('defeito_garantia')->nullable();
-            $table->string('nfe_garantia')->nullable();
-            $table->string('uso_profissional_garantia')->nullable();
+            $table->string('pedidoPecas')->nullable();
+            $table->string('entregaPecas')->nullable();
+            $table->string('pedidoOBS')->nullable();
+
+            $table->string('substatus')->nullable();
+            $table->string('obs_naoautorizado')->nullable();
 
             $table->timestamps();
         });
