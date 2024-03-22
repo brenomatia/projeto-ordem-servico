@@ -3,7 +3,7 @@
 @section('title', 'Dashboard')
 
 @section('content')
-    <div class="container">
+    <div class="container col-11">
 
 
         @if (session('success'))

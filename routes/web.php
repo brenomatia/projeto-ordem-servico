@@ -56,6 +56,7 @@ Route::middleware('empresas')->group(function () {
     Route::get('/empresa/{empresa}/ordem/buscar_cliente', [EmpresaController::class, 'dashboard_ordem_buscar_cliente'])->name('dashboard_ordem_buscar_cliente');
     Route::get('/empresa/{empresa}/ordem/get_ordem_servico', [EmpresaController::class, 'dashboard_buscar_ordem'])->name('dashboard_buscar_ordem');
     Route::post('/empresa/{empresa}/ordem/cadastro_equipamento', [EmpresaController::class, 'dashboard_ordem_cadastro_equipamento'])->name('dashboard_ordem_cadastro_equipamento');
+    Route::get('/empresa/{empresa}/ordem/deletando_equipamento/{id}', [EmpresaController::class, 'deletando_equipamento'])->name('deletando_equipamento');
     Route::post('/empresa/{empresa}/ordem/cadastrando_ordem', [EmpresaController::class, 'dashboard_cadastrando_ordem'])->name('dashboard_cadastrando_ordem');
     Route::post('/empresa/{empresa}/ordem/deletar/{id_ordem}', [EmpresaController::class, 'dashboard_ordem_deletar_registro'])->name('dashboard_ordem_deletar_registro');
     Route::get('/empresa/{empresa}/ordem/cadastrando_ordem/atualizar_status/{id_ordem}/equipamento/{id}', [EmpresaController::class, 'dashboard_ordem_atualiza_status'])->name('dashboard_ordem_atualiza_status');

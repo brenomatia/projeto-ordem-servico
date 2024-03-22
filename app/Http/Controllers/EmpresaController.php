@@ -1937,7 +1937,7 @@ class EmpresaController extends Controller
 
         if ($ordemServicos) {
 
-            $equipamentosOS = EquipamentoOS::where('id_user', Auth::user()->id)->where('os_permitida', $ordemServicos->id)->where('listado', null)->get();
+            $equipamentosOS = EquipamentoOS::where('id_user', Auth::user()->id)->where('listado', null)->get();
             $equipamentosListados = EquipamentoOS::where('id_user', Auth::user()->id)->where('os_permitida', $ordemServicos->id)->get();
             return view('empresa.dashboard_ordem_servico_pesquisa', compact('empresa', 'ordemServicos', 'equipamentosOS', 'equipamentosListados'));
 
@@ -3013,6 +3013,36 @@ class EmpresaController extends Controller
 
         return view('empresa.dashboard_gen_protocolo', compact('empresa', 'ordem', 'itens', 'id_ordem'));
 
+    }
+
+    public function deletando_equipamento(Request $request, $empresa, $id){
+        // Busca o registro da empresa na tabela "companies" pelo nome informado na rota.
+        $empresa = Company::where('name', $empresa)->firstOrFail();
+        // Cria uma nova conexão com o banco de dados da empresa.
+        Config::set('database.connections.empresa', [
+            'driver' => 'mysql',
+            'host' => $empresa->database_host,
+            'port' => $empresa->database_port,
+            'database' => $empresa->database_name,
+            'username' => $empresa->database_username,
+            'password' => $empresa->database_password,
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ]);
+        // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
+        DB::setDefaultConnection('empresa');
+        
+        if (!$request->user()) {
+            return redirect("/empresa/$empresa->name")->with('error', 'Você precisa fazer login para acessar essa página.');
+        } 
+
+        $deletar = EquipamentoOS::find($id);
+        $deletar->delete();
+
+        return back()->with('success', 'Equipamento excluido com sucesso!');
     }
 }
 

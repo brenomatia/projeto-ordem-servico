@@ -5,7 +5,7 @@
 @section('content')
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
-    <div class="container mt-5">
+    <div class="container col-11 mt-5">
 
         @if (session('success'))
             <div id="successAlert" class="alert alert-success mt-5">
@@ -45,10 +45,8 @@
                         </div>
                         <input type="text" class="form-control" id="equipamento" name="equipamento"
                             placeholder="Digite o equipamento">
-                            <div class="input-group-append">
-                                <button type="submit" class="btn btn-primary rounded-left" type="button" id="button-addon2">LISTAR EQUIPAMENTO</button>
-                            </div>
                     </div>
+                    <button type="submit" class="btn btn-primary col-12 mb-5" type="button" id="button-addon2">LISTAR EQUIPAMENTO</button>
                 </form>
 
                 <form action="{{ route('dashboard_cadastrando_ordem', ['empresa' => $empresa->name]) }}" method="POST"
@@ -63,6 +61,8 @@
                                         <i class="fa-solid fa-circle-chevron-right text-primary mr-2"></i>
                                         <input type="hidden" name="id_equipamento[]" value="{{ $new->id }}" />
                                         <span style="flex: 1;">{{ $new->equipamento }}</span>
+                                        <!-- Botão de exclusão -->
+                                        <button type="button" class="btn btn-danger ml-2" onclick="excluirItem({{ $new->id }})">Excluir</button>
                                     </div>
                                 </div>
                             </div>
@@ -207,60 +207,56 @@
                                                                                 
 
                                         <div class="row">
-                                            <div class="col-lg-3 col-md-6">
-                                                <div class="small-box bg-info">
+                                            <div class="col-lg-4 col-md-6">
+                                                <div class="small-box bg-purple">
                                                     <div class="inner">
-                                                        <h3>R$ {{ number_format($carrinho = $ordem->carrinhos()->sum('valor'), 2, ',', '.') }}</h3>
-                                                        
+                                                        <h3>R$ {{ number_format($ordem->carrinhos()->sum('valor'), 2, ',', '.') }}</h3>
                                                         <p>LISTAGEM</p>
                                                     </div>
-                                                    <div class="icon">
-                                                        <i class="fa-solid fa-file-invoice-dollar mt-3 mr-1" style="font-size: 60px;"></i>
-                                                    </div>
                                                 </div>
                                             </div>
-                                
-                                            <div class="col-lg-3 col-md-6">
-                                
-                                                <div class="small-box bg-success">
+                                        
+                                            <div class="col-lg-4 col-md-6">
+                                                <div class="small-box bg-info">
                                                     <div class="inner">
-                                                        <h3>R$ {{ number_format($terceiros = $ordem->terceiros()->sum('valor'), 2, ',', '.') }}</h3>
+                                                        <h3>R$ {{ number_format($ordem->terceiros()->sum('valor'), 2, ',', '.') }}</h3>
                                                         <p>TERCEIROS</p>
                                                     </div>
-                                                    <div class="icon">
-                                                        <i class="fa-solid fa-people-carry-box mt-3 mr-1" style="font-size: 60px;"></i>
-                                                    </div>
                                                 </div>
                                             </div>
-                                
-                                            <div class="col-lg-3 col-md-6">
-                                
+                                        
+                                            <div class="col-lg-4 col-md-6">
                                                 <div class="small-box bg-warning">
                                                     <div class="inner">
-                                                        <h3>R$ {{ number_format($maodeobra = $ordem->maoDeObras()->sum('valor'), 2, ',', '.') }}</h3>
+                                                        <h3>R$ {{ number_format($ordem->maoDeObras()->sum('valor'), 2, ',', '.') }}</h3>
                                                         <p>MÃO DE OBRA</p>
                                                     </div>
-                                                    <div class="icon">
-                                                        <i class="ion ion-person-add"></i>
-                                                    </div>
                                                 </div>
                                             </div>
-                                
-                                            <div class="col-lg-3 col-md-6">
-                                
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-lg-6 col-md-6">
                                                 <div class="small-box bg-danger">
                                                     <div class="inner">
-                                                        <h3>R$ {{ number_format($ordem->equipamentosOS->sum('valorComDesconto'), 2, ',', '.') }}</h3>
-                                                        <p>TOTAL OS</p>
+                                                        <h3>R$ {{ number_format(($ordem->carrinhos()->sum('valor') + $ordem->terceiros()->sum('valor')) + $ordem->maoDeObras()->sum('valor'), 2, ',', '.') }}</h3>
+                                                        <p>TOTAL O.S</p>
                                                     </div>
-                                                    <div class="icon">
-                                                        <i class="fa-solid fa-filter-circle-dollar mt-3 mr-1" style="font-size: 60px;"></i>
+                                                </div> 
+                                            </div>  
+                                        
+                                            <div class="col-lg-6 col-md-6">
+                                                <div class="small-box bg-success">
+                                                    <div class="inner">
+                                                        <h3>R$ {{ number_format($ordem->equipamentosOS->sum('valorComDesconto'), 2, ',', '.') }}</h3>
+                                                        <p>TOTAL C/ DESCONTO</p>
                                                     </div>
                                                 </div>
                                             </div>
+                                        </div>
+                                        
                                 
                                         </div>
-
+                                        <div class="table-responsive">
                                         <label>Equipamentos</label>
                                         <table class="table table-bordered rounded">
                                             <tbody>
@@ -269,8 +265,13 @@
                                                         <tr>
                                                             <td class="align-middle text-center" style="cursor: pointer;" onclick="window.location='{{ route('dashboard_listar_items_ordem', ['empresa'=>$empresa->name, 'id_ordem'=>$ordem->id, 'id_equipamento'=>$equipamento->id]) }}';">
                                                                 <strong>{{ $equipamento->equipamento }}</strong>
+
                                                                 @if(($equipamento->valorComDesconto == $equipamento->valorPago) && ($equipamento->valorPago > 0))
                                                                 <p><span class="badge pill-badge bg-success">Equipamento pago!</span></p>
+                                                                @endif
+
+                                                                @if(empty($equipamento->valorComDesconto))
+                                                                <p><span class="badge pill-badge bg-warning">Aguardando pagamento</span></p>
                                                                 @endif
 
                                                                 <p class="text-black">{{ $equipamento->status }}</p>
@@ -339,7 +340,7 @@
                                                 @endforeach
                                             </tbody>
                                         </table>
-
+                                        </div>
 
 
 
@@ -369,6 +370,18 @@
 
     </div>
 
+    <script>
+    function excluirItem(id) {
+        if (confirm("Tem certeza que deseja excluir este item?")) {
+            // Construindo a rota com o ID do equipamento
+            var rota = "{{ route('deletando_equipamento', ['empresa' => $empresa->name, 'id' => ':id']) }}";
+            // Substituindo o placeholder :id pelo ID do equipamento
+            rota = rota.replace(':id', id);
+            // Redirecionar para a rota de exclusão
+            window.location.href = rota;
+        }
+    }
+</script>
 
 
 

@@ -5,7 +5,7 @@
 @section('content')
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
-    <div class="container mt-5">
+    <div class="container col-11 mt-5">
 
         @if (session('success'))
             <div id="successAlert" class="alert alert-success mt-5">
@@ -45,10 +45,8 @@
                 </div>
                 <input type="text" class="form-control" id="equipamento" name="equipamento"
                     placeholder="Digite o equipamento">
-                    <div class="input-group-append">
-                        <button type="submit" class="btn btn-primary rounded-left" type="button" id="button-addon2">LISTAR EQUIPAMENTO</button>
-                    </div>
             </div>
+            <button type="submit" class="btn btn-primary col-12 mb-5" type="button" id="button-addon2">LISTAR EQUIPAMENTO</button>
         </form>
 
         <form action="{{ route('dashboard_cadastrando_ordem', ['empresa' => $empresa->name]) }}" method="POST"
@@ -63,6 +61,8 @@
                                 <i class="fa-solid fa-circle-chevron-right text-primary mr-2"></i>
                                 <input type="hidden" name="id_equipamento[]" value="{{ $new->id }}" />
                                 <span style="flex: 1;">{{ $new->equipamento }}</span>
+                                <!-- Botão de exclusão -->
+                                <button type="button" class="btn btn-danger ml-2" onclick="excluirItem({{ $new->id }})">Excluir</button>
                             </div>
                         </div>
                     </div>
@@ -523,7 +523,18 @@
 
     </div>
 
-
+    <script>
+    function excluirItem(id) {
+        if (confirm("Tem certeza que deseja excluir este item?")) {
+            // Construindo a rota com o ID do equipamento
+            var rota = "{{ route('deletando_equipamento', ['empresa' => $empresa->name, 'id' => ':id']) }}";
+            // Substituindo o placeholder :id pelo ID do equipamento
+            rota = rota.replace(':id', id);
+            // Redirecionar para a rota de exclusão
+            window.location.href = rota;
+        }
+    }
+</script>
 
 
 
