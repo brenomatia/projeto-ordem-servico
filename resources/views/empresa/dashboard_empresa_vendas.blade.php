@@ -77,11 +77,22 @@
                                             action="{{ route('dashboard_vendas_busca_produto', ['empresa' => $empresa->name]) }}"
                                             method="POST">
                                             @csrf
+                                            <label>BUSCAR PRODUTO:</label>
+                                            <div class="input-group col-12 mb-3">
+                                                <input type="text" class="form-control" id="produto_search"
+                                                    placeholder="NOME/SKU" aria-label="Listar produtos"
+                                                    aria-describedby="button-addon2" required>
+                                                <div class="input-group-append">
+                                                    <button class="btn bg-primary" type="button" id="button-addon2"><i
+                                                            class="fa-solid fa-magnifying-glass-plus"></i></button>
+                                                </div>
+                                            </div>
                                             <div class="row">
                                                 <div class="form-group col-md-10">
-                                                    <label for="codigo_produto">Código do Produto</label>
-                                                    <input type="text" class="form-control" id="cod_produto"
-                                                        name="cod_produto" placeholder="Código do Produto">
+                                                    <label>LISTA DE PRODUTOS:</label>
+                                                    <select name="cod_produto" id="produto_id" class="custom-select" required>
+                                                        <option value=""></option>
+                                                    </select>
                                                 </div>
                                                 <div class="form-group col-md-2">
                                                     <label for="quantidade">Quantidade</label>
@@ -452,12 +463,20 @@
                                                                 <td class="align-middle text-center">{{ $venda->cod_os }}</td>
                                                                 <td class="align-middle text-center">{{ $venda->equipamentoOS->equipamento }}</td>
                                                                 <td class="align-middle text-center">R${{ number_format($venda->valorTotal, 2, ',', '.') }}</td>
-                                                                <td class="align-middle text-center"><span class="badge badge-pill bg-danger">{{ $venda->desconto }}%</span></td>
+                                                                <td class="align-middle text-center">
+                                                                    @if($venda->desconto == 0)
+                                                                    @else
+                                                                    <span class="badge badge-pill bg-danger">{{ $venda->desconto }}%</span>
+                                                                    @endif
+
+                                                                </td>
                                                                 <td class="align-middle text-center">R${{ number_format($venda->valorComDesconto, 2, ',', '.') }}</td>
 
                                                                 <td class="align-middle text-center">
                                                                     @if($venda->valorTroco < 0)
                                                                         <span class="badge badge-pill bg-danger">R${{ number_format($venda->valorTroco, 2, ',', '.') }}</span>
+                                                                    @elseif($venda->valorTroco == 0)
+                                                                       
                                                                     @else
                                                                         <span class="badge badge-pill bg-success">R${{ number_format($venda->valorTroco, 2, ',', '.') }}</span>
                                                                     @endif
@@ -889,22 +908,26 @@
                                                                                                                             type="date"
                                                                                                                             class="form-control"
                                                                                                                             name="inicioGarantia"
-                                                                                                                            value="{{ $venda->garantiacliente ? $venda->garantiacliente->inicioGarantia : '' }}"
+                                                                                                                            value="{{ $venda->garantiacliente ? $venda->garantiacliente->inicioGarantia : now()->format('Y-m-d') }}"
                                                                                                                             required>
                                                                                                                     </div>
-                                                                                                                    <div
-                                                                                                                        class="col-md-6">
-                                                                                                                        <label
-                                                                                                                            for="fimGarantia">Fim
-                                                                                                                            da
-                                                                                                                            Garantia:</label>
-                                                                                                                        <input
-                                                                                                                            type="date"
-                                                                                                                            class="form-control"
-                                                                                                                            name="fimGarantia"
-                                                                                                                            value="{{ $venda->garantiacliente ? $venda->garantiacliente->fimGarantia : '' }}"
-                                                                                                                            required>
+                                                                                                                    <div class="col-md-6">
+                                                                                                                        <label for="fimGarantia">Fim da Garantia:</label>
+                                                                                                                        <select class="form-control" name="fimGarantia" required>
+                                                                                                                            <option value="">Selecione a duração da garantia</option>
+                                                                                                                            @php
+                                                                                                                                $fimGarantia = $venda->garantiacliente ? $venda->garantiacliente->fimGarantia : null;
+                                                                                                                            @endphp
+                                                                                                                            <option value="{{ \Carbon\Carbon::now()->addMonths(3)->format('Y-m-d') }}" {{ $fimGarantia && \Carbon\Carbon::parse($fimGarantia)->eq(\Carbon\Carbon::now()->addMonths(3)->format('Y-m-d')) ? 'selected' : '' }}>3 MESES</option>
+                                                                                                                            <option value="{{ \Carbon\Carbon::now()->addMonths(6)->format('Y-m-d') }}" {{ $fimGarantia && \Carbon\Carbon::parse($fimGarantia)->eq(\Carbon\Carbon::now()->addMonths(6)->format('Y-m-d')) ? 'selected' : '' }}>6 MESES</option>
+                                                                                                                            <option value="{{ \Carbon\Carbon::now()->addYear()->format('Y-m-d') }}" {{ $fimGarantia && \Carbon\Carbon::parse($fimGarantia)->eq(\Carbon\Carbon::now()->addYear()->format('Y-m-d')) ? 'selected' : '' }}>1 ANO</option>
+                                                                                                                        </select>
+                                                                                                                        @if($venda->garantiacliente && $venda->garantiacliente->fimGarantia)
+                                                                                                                            <p class="text-muted text-red" style="font-size: 12px;">Até {{ \Carbon\Carbon::parse($venda->garantiacliente->fimGarantia)->format('d/m/Y') }}</p>
+                                                                                                                        @endif
+
                                                                                                                     </div>
+                                                                                                                    
                                                                                                                 </div>
 
 
@@ -942,7 +965,7 @@
                                                                                                                                         <td>{{ $vendaProduto->qtd_produto }}
                                                                                                                                         </td>
                                                                                                                                         <td>R$
-                                                                                                                                            {{ $vendaProduto->transactions->valorTotal }}
+                                                                                                                                            {{ $vendaProduto->valorTotal }}
                                                                                                                                         </td>
                                                                                                                                     </tr>
                                                                                                                                 @endforeach
@@ -955,6 +978,16 @@
                                                                                                                 <div class="row mb-2">
                                                                                                                     <div class="col-md-8" style="align-items: left;">
                                                                                                                         <div class="row mb-3">
+                                                                                                                            <!-- Subtotal -->
+                                                                                                                            <div class="col-md-6">
+                                                                                                                                <strong>Total:</strong>
+                                                                                                                            </div>
+                                                                                                                            <div class="col-md-6">
+                                                                                                                           
+                                                                                                                                R$ {{ $vendaProduto->transactions->valorTotal }}
+                                                                                                                            </div>
+                                                                                                                        </div>
+                                                                                                                        <div class="row mb-3">
                                                                                                                             <!-- Desconto -->
                                                                                                                             <div class="col-md-6">
                                                                                                                                 <strong>Desconto:</strong>
@@ -964,27 +997,9 @@
                                                                                                                             </div>
                                                                                                                         </div>
                                                                                                                         <div class="row mb-3">
-                                                                                                                            <!-- Subtotal -->
-                                                                                                                            <div class="col-md-6">
-                                                                                                                                <strong>Subtotal:</strong>
-                                                                                                                            </div>
-                                                                                                                            <div class="col-md-6">
-                                                                                                                                @php 
-                                                                                                                                    $valorTotal = $vendaProduto->transactions->valorTotal;
-                                                                                                                                    $descontoPorcentagem = $vendaProduto->transactions->desconto_porcentagem;
-                                                                                                                                    $valorDesconto = $valorTotal * ($descontoPorcentagem / 100);
-
-                                                                                                                                    $totalComDesconto = $valorTotal - $valorDesconto;
-
-                                                                                                                                    $totalFormatado = number_format($totalComDesconto, 2, ',', '.');
-                                                                                                                                @endphp
-                                                                                                                                R$ {{ $totalFormatado }}
-                                                                                                                            </div>
-                                                                                                                        </div>
-                                                                                                                        <div class="row mb-3">
                                                                                                                             <!-- Total -->
                                                                                                                             <div class="col-md-6">
-                                                                                                                                <strong>Total pago:</strong>
+                                                                                                                                <strong>Subtotal:</strong>
                                                                                                                             </div>
                                                                                                                             <div class="col-md-6">
                                                                                                                                 R$ {{ number_format($vendaProduto->transactions->valorPago, 2, ',', '.') }}
@@ -1072,6 +1087,28 @@
                     </div>
                 </div>
             </div>
+
+
+            <script>
+                $(document).ready(function() {
+                    $('#produto_search').keyup(function() {
+                        var query = $(this).val();
+                        if (query != '') {
+                            $.ajax({
+                                url: "{{ route('dashboard_get_busca_produto', ['empresa' => $empresa->name]) }}",
+                                method: "GET",
+                                data: {
+                                    query: query
+                                },
+                                success: function(data) {
+                                    $('#produto_id').html(data);
+                                }
+                            });
+                        }
+                    });
+        
+                });
+            </script>
 
 
             <script>

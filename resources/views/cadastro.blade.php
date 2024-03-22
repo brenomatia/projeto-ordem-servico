@@ -21,12 +21,6 @@
 
 <body class="hold-transition login-page">
 
-
-    <!-- Preloader -->
-    <div class="preloader flex-column justify-content-center align-items-center" style="background-color: #343A40;">
-        <img class="animation__shake" src="{{ asset('logos/logo.png') }}" height="128" width="128">
-    </div>
-
     <div class="login-box">
         <!-- /.login-logo -->
         <div class="card card-outline card-primary">

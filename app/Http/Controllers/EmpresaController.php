@@ -1820,14 +1820,19 @@ class EmpresaController extends Controller
             return redirect("/empresa/$empresa->name")->with('error', 'Você precisa fazer login para acessar essa página.');
         }
 
-        $busca1 = OrdemServico::find($id_ordem);
-        $busca1->delete();
-
-        $busca2 = EquipamentoOS::where('os_permitida', $id_ordem)->delete();
-
-        if ($busca1 || $busca2) {
-            return back()->with('success', 'Ordem de servico excluido com sucesso!');
+        if(Auth::user()->nivel == '0'){
+            $busca1 = OrdemServico::find($id_ordem);
+            $busca1->delete();
+    
+            $busca2 = EquipamentoOS::where('os_permitida', $id_ordem)->delete();
+    
+            if ($busca1 || $busca2) {
+                return back()->with('success', 'Ordem de servico excluido com sucesso!');
+            }
         }
+
+        return back()->with('error', 'Você não tem permissão para deletar essa ordem de serviço!');
+
 
     }
     public function setOpenCard(Request $request, $empresa, $cardId, $id_ordem)
@@ -2893,19 +2898,31 @@ class EmpresaController extends Controller
         $new->q_aut = Auth::user()->name;
         $new->MeioPagamento = $request->tipo_pagamentoProdutos;
         $new->valorTotal = $request->valor_total;
-        $new->valorPago = $request->valorPago;
+
+        if($request->valorPago == null)
+        {
+            $new->valorPago = $request->valor_total;
+        }
+        else
+        {
+            $new->valorPago = $request->valorPago;
+        }	
+
         $new->valorTroco = $request->troco;
         $new->desconto = $request->descontoProdutos;
         $new->valorComDesconto = $request->total;
         $new->parcelaTotal = $request->parcelas;
-
-        if($request->parcelas != null){
+    
+        if($request->parcelas != null)
+        {
             $resultado = $request->total / $request->parcelas;
             $resultado_formatado = number_format($resultado, 2, '.', '');
             $new->valorParcelas = $resultado_formatado;
-        }else{
-            $new->valorParcelas = $request->total;
         }
+        else
+        {
+            $new->valorParcelas = $request->total;
+        } 
 
         $new->save();
         
@@ -3043,6 +3060,83 @@ class EmpresaController extends Controller
         $deletar->delete();
 
         return back()->with('success', 'Equipamento excluido com sucesso!');
+    }
+
+    public function dashboard_ordem_cancelamento(Request $request, $empresa, $id_ordem)
+    {
+        // Busca o registro da empresa na tabela "companies" pelo nome informado na rota.
+        $empresa = Company::where('name', $empresa)->firstOrFail();
+        // Cria uma nova conexão com o banco de dados da empresa.
+        Config::set('database.connections.empresa', [
+            'driver' => 'mysql',
+            'host' => $empresa->database_host,
+            'port' => $empresa->database_port,
+            'database' => $empresa->database_name,
+            'username' => $empresa->database_username,
+            'password' => $empresa->database_password,
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ]);
+        // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
+        DB::setDefaultConnection('empresa');
+
+        if (!$request->user()) {
+            return redirect("/empresa/$empresa->name")->with('error', 'Você precisa fazer login para acessar essa página.');
+        }
+
+        if(Auth::user()->nivel == '0'){
+            $ordem = OrdemServico::where('id', $id_ordem)->first();
+            $ordem->status = 'CANCELADA';
+            $ordem->obs = $request->obs;
+            $ordem->save();
+    
+            return back()->with('success', 'Ordem cancelada com sucesso!');
+        }
+
+       return back()->with('error', 'Você não tem permissão para cancelar ordens de serviço!');
+        
+
+    }
+
+    public function dashboard_get_busca_produto(Request $request, $empresa)
+    {
+        // Busca o registro da empresa na tabela "companies" pelo nome informado na rota.
+        $empresa = Company::where('name', $empresa)->firstOrFail();
+        // Cria uma nova conexão com o banco de dados da empresa.
+        Config::set('database.connections.empresa', [
+            'driver' => 'mysql',
+            'host' => $empresa->database_host,
+            'port' => $empresa->database_port,
+            'database' => $empresa->database_name,
+            'username' => $empresa->database_username,
+            'password' => $empresa->database_password,
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ]);
+        // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
+        DB::setDefaultConnection('empresa');
+
+        if (!$request->user()) {
+            return redirect("/empresa/$empresa->name")->with('error', 'Você precisa fazer login para acessar essa página.');
+        }
+
+        $searchTerm = $request->get('query');
+        $produtos = Produto::where('descricao', 'like', "%$searchTerm%")
+            ->orWhere('sku', 'like', "%$searchTerm%")
+            ->orderBy('descricao', 'asc')
+            ->get();
+
+        $output = '<option value="">Selecione seu produto</option>';
+        foreach ($produtos as $produto) {
+            $output .= '<option value="' . $produto->sku . '">' . $produto->descricao . ' - SKU: ' . $produto->sku . ' - [ R$ ' . $produto->pvenda . ' ] </option>';
+        }
+        echo $output;
     }
 }
 

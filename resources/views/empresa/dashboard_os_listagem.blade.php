@@ -9,46 +9,37 @@
 
 
         <div class="row">
-            <div class="col-lg-3 col-6">
+            <div class="col-lg-3 col-md-6">
 
                 <div class="small-box bg-info">
                     <div class="inner">
                         <h3>R$ {{ number_format($sumListagem, 2, ',', '.') }}</h3>
                         <p>LISTAGEM</p>
                     </div>
-                    <div class="icon">
-                        <i class="fa-solid fa-file-invoice-dollar mt-3 mr-1" style="font-size: 60px;"></i>
-                    </div>
                 </div>
             </div>
 
-            <div class="col-lg-3 col-6">
+            <div class="col-lg-3 col-md-6">
 
                 <div class="small-box bg-success">
                     <div class="inner">
                         <h3>R$ {{ number_format($sumTerceiro, 2, ',', '.') }}</h3>
                         <p>TERCEIROS</p>
                     </div>
-                    <div class="icon">
-                        <i class="fa-solid fa-people-carry-box mt-3 mr-1" style="font-size: 60px;"></i>
-                    </div>
                 </div>
             </div>
 
-            <div class="col-lg-3 col-6">
+            <div class="col-lg-3 col-md-6">
 
                 <div class="small-box bg-warning">
                     <div class="inner">
                         <h3>R$ {{ number_format($sumMao, 2, ',', '.') }}</h3>
                         <p>MÃO DE OBRA</p>
                     </div>
-                    <div class="icon">
-                        <i class="ion ion-person-add"></i>
-                    </div>
                 </div>
             </div>
 
-            <div class="col-lg-3 col-6">
+            <div class="col-lg-3 col-md-6">
 
                 <div class="small-box bg-danger">
                     <div class="inner">
@@ -56,9 +47,6 @@
                             {{ is_null($equipamento->valorComDesconto) ? number_format($sumTotal, 2, ',', '') : number_format($equipamento->valorComDesconto, 2, ',', '') }}
                         </h3>
                         <p>TOTAL OS</p>
-                    </div>
-                    <div class="icon">
-                        <i class="fa-solid fa-filter-circle-dollar mt-3 mr-1" style="font-size: 60px;"></i>
                     </div>
                 </div>
             </div>
@@ -104,7 +92,7 @@
 
         <div class="card">
             <div class="card-header bg-light">
-                <ul class="nav nav-tabs card-header-tabs" id="myTab" role="tablist">
+                <ul class="nav nav-tabs card-header-tabs mb-1" id="myTab" role="tablist">
 
                     <li class="nav-item mr-3">
 
@@ -202,7 +190,7 @@
 
                 </ul>
             </div>
-            <div class="tab-content" id="myTabContent">
+            <div class="tab-content p-3" id="myTabContent">
                 <div class="tab-pane fade @if (
                     $equipamento->status == 'NÃO AUTORIZADO' ||
                         $equipamento->status == 'AUTORIZADO' ||
@@ -905,7 +893,7 @@
                                     $equipamento->valorPago)
                                 <p class="text-center text-danger">Este item já foi processado anteriormente.</p>
                             @else
-                                <button type="submit" class="btn bg-primary col-12 mb-5">PROCESSAR VENDA</button>
+                                <button type="submit" class="btn bg-primary col-12 mb-5">PROCESSAR ITEM</button>
                             @endif
                         </form>
                     </div>
@@ -916,16 +904,8 @@
         </div>
     </div>
 
-
-
-
-
-
-
-
-
-
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

@@ -12,6 +12,7 @@
             <p>Empresa: <strong>{{ $empresa->name }}</strong></p>
             <p>Endereço: <strong>{{ $empresa->endereco }}</strong></p>
             <p>Data: <strong>{{ $ordem->created_at->format('d/m/Y \a\s H:i:s') }}</strong></p>
+            <p>Atendimento: <strong>{{ $ordem->abertura_da_ordem }}</strong></p>
         </div>
         <div class="col-md-6">
             <h5>Dados do Cliente</h5>
@@ -30,16 +31,15 @@
                     <div class="card-header bg-secondary text-white">
                         <h5 class="card-title">{{ $item->equipamento }}</h5>
                     </div>
-                    <div class="card-body">
-                        <p class="card-text"><strong>Atendimento efetuado por:</strong> {{ $item->q_aut }}</p>
-                    </div>
                 </div>
             @endforeach
         </div>
     </div>
     
 
-<button onclick="imprimirPDF()" type="button" class="btn bg-primary mb-5 col-12 removerNaImpressao"><i class="fa-solid fa-file-pdf mr-2"></i>Imprimir Protocolo</button>
+<button onclick="imprimirPDF()" type="button" class="btn bg-primary mb-3 col-12 removerNaImpressao"><i class="fa-solid fa-file-pdf mr-2"></i>Imprimir Protocolo</button>
+
+<a href="{{ URL::route('dashboard_ordem_servico', ['empresa'=>$empresa->name]) }}"><button class="btn bg-purple col-12 mb-5">VOLTAR</button></a>
 
 </div>
 </div>

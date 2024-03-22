@@ -54,10 +54,19 @@
                         </div>
                     </div>
                     <div class="card-footer rounded-bottom" style="text-align: left!important;">
-                        @if($item->valorComDesconto == $item->valorPago)
-                            <p class="text-green"><strong>Equipamento pago!</strong> </p>
-                            <p class="text-muted">Em: {{ $item->updated_at->format('d/m/Y \a\s H:i:s') }}</p>
+                        @if( $item->valorComDesconto &&
+                        $item->MeioPagamento &&
+                        $item->valorTroco &&
+                        $item->parcelaTotal &&
+                        $item->valorParcelas &&
+                        $item->valorPago )
+                        <p><span class="badge pill-badge bg-purple">Equipamento pago</span></p>
+                        @elseif($item->valorPago)
+                        <p><span class="badge pill-badge bg-success">Equipamento processado</span></p>
                         @else
+                        <p><span class="badge pill-badge bg-warning">Aguardando orçamento</span></p>
+                        @endif
+
                             @if($item->valorTotal)
                                 <p><strong>Total:</strong> R$ {{ $item->valorTotal }}</span></p>
                             @endif
@@ -80,13 +89,13 @@
 
                             <p class="text-muted">Em: {{ $item->updated_at->format('d/m/Y \a\s H:i:s') }}</p>
                       
-                        @endif
-
+                  
 
                     </div>
                 </div>
             @endforeach
-<button onclick="imprimirPDF()" type="button" class="btn btn-success mb-5 col-12 removerNaImpressao"><i class="fa-solid fa-file-pdf mr-2"></i>Imprimir PDF</button>
+<button onclick="imprimirPDF()" type="button" class="btn btn-success mb-3 col-12 removerNaImpressao"><i class="fa-solid fa-file-pdf mr-2"></i>Imprimir PDF</button>
+<a href="{{ URL::route('dashboard_ordem_servico', ['empresa'=>$empresa->name]) }}"><button class="btn bg-purple col-12 mb-5">VOLTAR</button></a>
         </div>
     </div>
 </div>

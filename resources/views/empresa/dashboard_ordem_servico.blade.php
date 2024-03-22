@@ -154,8 +154,7 @@
                             </div>
                             <div class="card-tools">
 
-                                <i
-                                    class="fas {{ Session::has('openCardId') && Session::get('openCardId') == $loop->iteration ? 'fa-circle-arrow-up text-red' : 'fa-circle-arrow-down text-green' }}"></i>
+                                <i class="fas {{ Session::has('openCardId') && Session::get('openCardId') == $loop->iteration ? 'fa-circle-arrow-up text-red' : 'fa-circle-arrow-down text-green' }}"></i>
 
                             </div>
                         </div>
@@ -164,14 +163,48 @@
                         class="collapse {{ Session::get('openCardId') == $loop->iteration ? 'show' : '' }}">
                         <div class="card-body">
 
-                            <div class="table-responsive">
+                            
                                 <div class="card">
                                     <div class="card-body">
 
-                                        <a href="{{ URL::route('dashboard_gerador_pdf_route', ['empresa'=>$empresa->name, 'id_ordem'=>$ordem->id]) }}" target="_Blank"><button class="btn bg-purple mb-3"><i class="fa-solid fa-file-pdf mr-2"></i>VISUALIZAR PDF</button></a>
-                                        <a href="{{ URL::route('dashboard_gen_protocolo', ['empresa'=>$empresa->name, 'id_ordem'=>$ordem->id]) }}" target="_Blank"><button class="btn bg-gray mb-3"><i class="fa-solid fa-clipboard-list mr-2"></i>GERAR PROTOCOLO</button></a>
+                                        <a href="{{ URL::route('dashboard_gerador_pdf_route', ['empresa'=>$empresa->name, 'id_ordem'=>$ordem->id]) }}"><button class="btn bg-purple mb-3"><i class="fa-solid fa-file-pdf mr-2"></i>VISUALIZAR PDF</button></a>
+                                        <a href="{{ URL::route('dashboard_gen_protocolo', ['empresa'=>$empresa->name, 'id_ordem'=>$ordem->id]) }}"><button class="btn bg-gray mb-3"><i class="fa-solid fa-clipboard-list mr-2"></i>GERAR PROTOCOLO</button></a>
+                                        
+                                        <button type="button" class="btn btn-warning mb-3 text-white" data-toggle="modal" data-target="#cancelar_ordem_{{ $ordem->id }}" data-toggle="tooltip" title="Excluir cliente">
+                                            <i class="fa-solid fa-triangle-exclamation mr-2"></i> CANCELAR OS
+                                        </button>
+                                            
+                                        <div class="modal fade" id="cancelar_ordem_{{ $ordem->id }}" tabindex="-1" role="dialog" aria-labelledby="cancelar_ordem_{{ $ordem->id }}" aria-hidden="true">
+                                            <div class="modal-dialog" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title"
+                                                            id="cancelar_ordem_{{ $ordem->id }}">
+                                                            Confirmar Cancelamento</h5>
+                                                        <button type="button" class="close" data-dismiss="modal"
+                                                            aria-label="Fechar">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <form action="{{ route('dashboard_ordem_cancelamento', ['empresa' => $empresa->name, 'id_ordem' => $ordem->id]) }}" method="POST">
+                                                            @csrf
+                                                            <div class="form-group">
+                                                                <label for="motivoCancelamento">Motivo do Cancelamento:</label>
+                                                                <textarea class="form-control" name="obs" id="motivoCancelamento" rows="3" {{ $ordem->obs ? 'disabled' : '' }}>{{ $ordem->obs ?: '' }}</textarea>
+                                                            </div>
+                                                            @if(!$ordem->obs != null)
+                                                            <button type="submit" class="btn btn-danger col-12">CANCELAR</button>
+                                                            @endif
+                                                        </form>
+                                                    </div>
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <button type="button" class="btn btn-danger mb-3" data-toggle="modal" data-target="#deletarORDEM{{ $ordem->id }}" data-toggle="tooltip" title="Excluir cliente">
-                                            <i class="fa-solid fa-trash-can"></i> EXCLUIR ORDEM
+                                            <i class="fa-solid fa-trash-can mr-2"></i> EXCLUIR ORDEM
                                         </button>
                                             
                                         <div class="modal fade" id="deletarORDEM{{ $ordem->id }}" tabindex="-1" role="dialog" aria-labelledby="deletarORDEM{{ $ordem->id }}" aria-hidden="true">
@@ -254,9 +287,8 @@
                                             </div>
                                         </div>
                                         
-                                
-                                        </div>
-                                        <div class="table-responsive">
+        
+                                      
                                         <label>Equipamentos</label>
                                         <table class="table table-bordered rounded">
                                             <tbody>
@@ -266,12 +298,15 @@
                                                             <td class="align-middle text-center" style="cursor: pointer;" onclick="window.location='{{ route('dashboard_listar_items_ordem', ['empresa'=>$empresa->name, 'id_ordem'=>$ordem->id, 'id_equipamento'=>$equipamento->id]) }}';">
                                                                 <strong>{{ $equipamento->equipamento }}</strong>
 
-                                                                @if(($equipamento->valorComDesconto == $equipamento->valorPago) && ($equipamento->valorPago > 0))
-                                                                <p><span class="badge pill-badge bg-success">Equipamento pago!</span></p>
-                                                                @endif
-
-                                                                @if(empty($equipamento->valorComDesconto))
-                                                                <p><span class="badge pill-badge bg-warning">Aguardando pagamento</span></p>
+                                                                @if( $equipamento->valorComDesconto &&
+                                                                $equipamento->MeioPagamento &&
+                                                                $equipamento->valorTroco &&
+                                                                $equipamento->parcelaTotal &&
+                                                                $equipamento->valorParcelas &&
+                                                                $equipamento->valorPago )
+                                                                <p><span class="badge pill-badge bg-purple">Equipamento pago</span></p>
+                                                                @elseif($equipamento->valorPago)
+                                                                <p><span class="badge pill-badge bg-success">Equipamento processado</span></p>
                                                                 @endif
 
                                                                 <p class="text-black">{{ $equipamento->status }}</p>
@@ -340,22 +375,11 @@
                                                 @endforeach
                                             </tbody>
                                         </table>
-                                        </div>
-
-
-
-
-
-
-
-
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
-                </div>
                 @endif
             @endforeach
         @else

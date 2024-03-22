@@ -163,11 +163,44 @@
                 class="collapse {{ Session::get('openCardId') == $ordemServicos->id ? 'show' : '' }}">
                 <div class="card-body">
 
-                    <a href="{{ URL::route('dashboard_gerador_pdf_route', ['empresa'=>$empresa->name, 'id_ordem'=>$ordemServicos->id]) }}" target="_Blank"><button class="btn bg-purple mb-3"><i class="fa-solid fa-file-pdf mr-2"></i>VISUALIZAR PDF</button></a>
-                    <a href="{{ URL::route('dashboard_gen_protocolo', ['empresa'=>$empresa->name, 'id_ordem'=>$ordemServicos->id]) }}" target="_Blank"><button class="btn bg-gray mb-3"><i class="fa-solid fa-clipboard-list mr-2"></i>GERAR PROTOCOLO</button></a>
+                    <a href="{{ URL::route('dashboard_gerador_pdf_route', ['empresa'=>$empresa->name, 'id_ordem'=>$ordemServicos->id]) }}"><button class="btn bg-purple mb-3"><i class="fa-solid fa-file-pdf mr-2"></i>VISUALIZAR PDF</button></a>
+                    <a href="{{ URL::route('dashboard_gen_protocolo', ['empresa'=>$empresa->name, 'id_ordem'=>$ordemServicos->id]) }}"><button class="btn bg-gray mb-3"><i class="fa-solid fa-clipboard-list mr-2"></i>GERAR PROTOCOLO</button></a>
+                    
+                   
+                    <button type="button" class="btn btn-warning mb-3 text-white" data-toggle="modal" data-target="#cancelar_ordem_{{ $ordemServicos->id }}" data-toggle="tooltip" title="Excluir cliente">
+                        <i class="fa-solid fa-triangle-exclamation mr-2"></i> CANCELAR OS
+                    </button>
                     <button type="button" class="btn btn-danger mb-3" data-toggle="modal" data-target="#deletarORDEM{{ $ordemServicos->id }}" data-toggle="tooltip" title="Excluir cliente">
                         <i class="fa-solid fa-trash-can"></i> EXCLUIR ORDEM
                     </button>
+             
+                        
+                    <div class="modal fade" id="cancelar_ordem_{{ $ordemServicos->id }}" tabindex="-1" role="dialog" aria-labelledby="cancelar_ordem_{{ $ordemServicos->id }}" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title"
+                                        id="cancelar_ordem_{{ $ordemServicos->id }}">
+                                        Confirmar Cancelamento</h5>
+                                    <button type="button" class="close" data-dismiss="modal"
+                                        aria-label="Fechar">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <form action="{{ route('dashboard_ordem_cancelamento', ['empresa' => $empresa->name, 'id_ordem' => $ordemServicos->id]) }}" method="POST">
+                                        @csrf
+                                        <div class="form-group">
+                                            <label for="motivoCancelamento">Motivo do Cancelamento:</label>
+                                            <textarea class="form-control" name="obs" id="motivoCancelamento" rows="3"></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-danger col-12">CANCELAR</button>
+                                    </form>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
                         
                     <div class="modal fade" id="deletarORDEM{{ $ordemServicos->id }}" tabindex="-1" role="dialog" aria-labelledby="deletarORDEM{{ $ordemServicos->id }}" aria-hidden="true">
                         <div class="modal-dialog" role="document">
@@ -266,8 +299,266 @@
                                                 <tr>
                                                     <td class="align-middle text-center" style="cursor: pointer;" onclick="window.location='{{ route('dashboard_listar_items_ordem', ['empresa'=>$empresa->name, 'id_ordem'=>$ordemServicos->id, 'id_equipamento'=>$equipamento->id]) }}';">
                                                         <strong>{{ $equipamento->equipamento }}</strong>
-                                                        @if(($equipamento->valorComDesconto == $equipamento->valorPago) && ($equipamento->valorPago > 0))
-                                                        <p><span class="badge pill-badge bg-success">Equipamento pago!</span></p>
+
+                                                        @if( $equipamento->valorComDesconto &&
+                                                        $equipamento->desconto &&
+                                                        $equipamento->MeioPagamento &&
+                                                        $equipamento->valorTroco &&
+                                                        $equipamento->parcelaTotal &&
+                                                        $equipamento->valorParcelas &&
+                                                        $equipamento->valorPago )
+                                                        <p><span class="badge pill-badge bg-purple">Equipamento pago</span></p>
+                                                        @elseif($equipamento->valorPago)
+                                                        <p><span class="badge pill-badge bg-success">Equipamento processado</span></p>
+                                                        @endif
+
+                                                        <p class="text-black">{{ $equipamento->status }}</p>
+                                                    </td>
+                                                    <td class="align-middle text-center" style="cursor: pointer;" onclick="window.location='{{ route('dashboard_listar_items_ordem', ['empresa'=>$empresa->name, 'id_ordem'=>$ordemServicos->id, 'id_equipamento'=>$equipamento->id]) }}';"> 
+                                                        @if($equipamento->valorComDesconto)
+                                                            R$ {{ number_format($equipamento->valorComDesconto, 2, ',', '.') }}
+                                                        @else
+                                                            R$ {{ number_format(($equipamento->Carrinhos()->sum('valor') + $equipamento->Terceiro()->sum('valor')) + $equipamento->MaoDeObra()->sum('valor'), 2, ',', '.') }}
+                                                        @endif
+                                                    </td>
+                                                    <td class="align-middle text-center">
+
+                                                        <!-- APAGAR ATUALIZAR EQUIPAMENTO -->
+
+                                                        <button type="button" class="btn btn-primary"
+                                                            data-toggle="modal"
+                                                            data-target="#atualizardados_{{ $equipamento->id }}"
+                                                            data-toggle="tooltip" title="Alterar nome equipamento">
+                                                            <i class="fa-solid fa-pen-to-square"></i>
+                                                        </button>
+
+                                                        <div class="modal fade"
+                                                            id="atualizardados_{{ $equipamento->id }}"
+                                                            tabindex="-1" role="dialog"
+                                                            aria-labelledby="atualizardados_{{ $equipamento->id }}"
+                                                            aria-hidden="true">
+                                                            <div class="modal-dialog" role="document">
+                                                                <div class="modal-content">
+                                                                    <div class="modal-header">
+                                                                        <h5 class="modal-title"
+                                                                            id="atualizardados_{{ $equipamento->id }}">
+                                                                            {{ $equipamento->equipamento }}</h5>
+                                                                        <button type="button" class="close"
+                                                                            data-dismiss="modal"
+                                                                            aria-label="Fechar">
+                                                                            <span aria-hidden="true">&times;</span>
+                                                                        </button>
+                                                                    </div>
+                                                                    <div class="modal-body"
+                                                                        style="text-align: left;">
+
+                                                                        <form
+                                                                            action="{{ route('dashboard_ordem_atualizar_equipamento', ['empresa' => $empresa->name, 'id_ordem' => $ordemServicos->id, 'id' => $equipamento->id]) }}"
+                                                                            method="POST">
+                                                                            @csrf
+                                                                            <label>Equipamento:</label>
+                                                                            <input class="form-control mb-2"
+                                                                                name="equipamento"
+                                                                                value="{{ $equipamento->equipamento }}" />
+                                                                            <button type="submit"
+                                                                                class="btn btn-primary col-12">ATUALIZAR</button>
+                                                                        </form>
+
+
+
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <!-- FIM ATUALIZAR EQUIPAMENTO -->
+
+                                                    </td>
+                                                </tr>
+                                            @endif
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @elseif($ordemServicos->status == 'CANCELADA')
+        <div class="card ordem-servico" style="border-left: 3px solid #FFC107;">
+            <a href="{{ route('setOpenCard', ['empresa' => $empresa->name, 'cardId' => $ordemServicos->id, 'id_ordem' => $ordemServicos->id]) }}"
+                class="btn col-12">
+                <div class="card-header border-0" id="heading{{ $ordemServicos->id }}">
+                    <div class="card-title" style="text-align: left;">
+                        <span class="badge badge-warning" style="font-size: 15px;">
+                            ORDEM DE SERVIÇO #{{ $ordemServicos->id }} - {{ $ordemServicos->status }}
+                        </span>
+                        <p class="mt-3" style="font-size: 15px;">
+                            <strong>Cliente:</strong> {{ $ordemServicos->nome_cliente }}<br>
+                            <strong>Data de Abertura:</strong> {{ $ordemServicos->created_at->format('d/m/Y') }}
+                        </p>
+                    </div>
+                    <div class="card-tools">
+
+                        <i
+                            class="fas {{ Session::has('openCardId') && Session::get('openCardId') == $ordemServicos->id ? 'fa-circle-arrow-up text-red' : 'fa-circle-arrow-down text-green' }}"></i>
+
+                    </div>
+                </div>
+            </a>
+            <div id="collapse{{ $ordemServicos->id }}"
+                class="collapse {{ Session::get('openCardId') == $ordemServicos->id ? 'show' : '' }}">
+                <div class="card-body">
+
+                    <a href="{{ URL::route('dashboard_gerador_pdf_route', ['empresa'=>$empresa->name, 'id_ordem'=>$ordemServicos->id]) }}"><button class="btn bg-purple mb-3"><i class="fa-solid fa-file-pdf mr-2"></i>VISUALIZAR PDF</button></a>
+                    <a href="{{ URL::route('dashboard_gen_protocolo', ['empresa'=>$empresa->name, 'id_ordem'=>$ordemServicos->id]) }}"><button class="btn bg-gray mb-3"><i class="fa-solid fa-clipboard-list mr-2"></i>GERAR PROTOCOLO</button></a>
+                    
+                    @if(!$ordemServicos->obs != null)
+                    <button type="button" class="btn btn-warning mb-3 text-white" data-toggle="modal" data-target="#cancelar_ordem_{{ $ordemServicos->id }}" data-toggle="tooltip" title="Excluir cliente">
+                        <i class="fa-solid fa-triangle-exclamation mr-2"></i> CANCELAR OS
+                    </button>
+                    <button type="button" class="btn btn-danger mb-3" data-toggle="modal" data-target="#deletarORDEM{{ $ordemServicos->id }}" data-toggle="tooltip" title="Excluir cliente">
+                        <i class="fa-solid fa-trash-can"></i> EXCLUIR ORDEM
+                    </button>
+                    @endif
+
+                    <div class="modal fade" id="cancelar_ordem_{{ $ordemServicos->id }}" tabindex="-1" role="dialog" aria-labelledby="cancelar_ordem_{{ $ordemServicos->id }}" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title"
+                                        id="cancelar_ordem_{{ $ordemServicos->id }}">
+                                        Confirmar Cancelamento</h5>
+                                    <button type="button" class="close" data-dismiss="modal"
+                                        aria-label="Fechar">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <form action="{{ route('dashboard_ordem_cancelamento', ['empresa' => $empresa->name, 'id_ordem' => $ordemServicos->id]) }}" method="POST">
+                                        @csrf
+                                        <div class="form-group">
+                                            <label for="motivoCancelamento">Motivo do Cancelamento:</label>
+                                            <textarea class="form-control" name="obs" id="motivoCancelamento" rows="3" {{ $ordemServicos->obs ? 'disabled' : '' }}>{{ $ordemServicos->obs ?: '' }}</textarea>
+                                        </div>
+                                        @if(!$ordemServicos->obs != null)
+                                        <button type="submit" class="btn btn-danger col-12">CANCELAR</button>
+                                        @endif
+                                    </form>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                        
+                    <div class="modal fade" id="deletarORDEM{{ $ordemServicos->id }}" tabindex="-1" role="dialog" aria-labelledby="deletarORDEM{{ $ordemServicos->id }}" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title"
+                                        id="deletarORDEM{{ $ordemServicos->id }}">
+                                        Confirmar Exclusão</h5>
+                                    <button type="button" class="close" data-dismiss="modal"
+                                        aria-label="Fechar">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    Tem certeza de que deseja a excluir a ordem do cliente
+                                    "{{ $ordemServicos->nome_cliente }}" ?
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-dismiss="modal">Cancelar</button>
+                                    <form
+                                        action="{{ route('dashboard_ordem_deletar_registro', ['empresa' => $empresa->name, 'id_ordem' => $ordemServicos->id]) }}"
+                                        method="POST" style="display: inline-block;">
+                                        @csrf
+                                        <button type="submit" class="btn btn-danger">Excluir</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <div class="card">
+                            <div class="card-body">
+
+                                <div class="row">
+                                    <div class="col-lg-3 col-md-6">
+                                        <div class="small-box bg-info">
+                                            <div class="inner">
+                                                <h3>R$ {{ number_format($carrinho = $ordemServicos->carrinhos()->sum('valor'), 2, ',', '.') }}</h3>
+                                                
+                                                <p>LISTAGEM</p>
+                                            </div>
+                                            <div class="icon">
+                                                <i class="fa-solid fa-file-invoice-dollar mt-3 mr-1" style="font-size: 60px;"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                        
+                                    <div class="col-lg-3 col-md-6">
+                        
+                                        <div class="small-box bg-success">
+                                            <div class="inner">
+                                                <h3>R$ {{ number_format($terceiros = $ordemServicos->terceiros()->sum('valor'), 2, ',', '.') }}</h3>
+                                                <p>TERCEIROS</p>
+                                            </div>
+                                            <div class="icon">
+                                                <i class="fa-solid fa-people-carry-box mt-3 mr-1" style="font-size: 60px;"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                        
+                                    <div class="col-lg-3 col-md-6">
+                        
+                                        <div class="small-box bg-warning">
+                                            <div class="inner">
+                                                <h3>R$ {{ number_format($maodeobra = $ordemServicos->maoDeObras()->sum('valor'), 2, ',', '.') }}</h3>
+                                                <p>MÃO DE OBRA</p>
+                                            </div>
+                                            <div class="icon">
+                                                <i class="ion ion-person-add"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                        
+                                    <div class="col-lg-3 col-md-6">
+                        
+                                        <div class="small-box bg-danger">
+                                            <div class="inner">
+                                                <h3>R$ {{ number_format($ordemServicos->equipamentosOS->sum('valorComDesconto'), 2, ',', '.') }}</h3>
+                                                <p>TOTAL OS</p>
+                                            </div>
+                                            <div class="icon">
+                                                <i class="fa-solid fa-filter-circle-dollar mt-3 mr-1" style="font-size: 60px;"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                        
+                                </div>
+
+                                <label>Equipamentos</label>
+                                <table class="table table-bordered rounded">
+                                    <tbody>
+                                        @foreach ($equipamentosListados as $equipamento)
+                                            @if ($equipamento->os_permitida == $ordemServicos->id)
+                                                <tr>
+                                                    <td class="align-middle text-center" style="cursor: pointer;" onclick="window.location='{{ route('dashboard_listar_items_ordem', ['empresa'=>$empresa->name, 'id_ordem'=>$ordemServicos->id, 'id_equipamento'=>$equipamento->id]) }}';">
+                                                        <strong>{{ $equipamento->equipamento }}</strong>
+
+                                                        @if( $equipamento->valorComDesconto &&
+                                                        $equipamento->desconto &&
+                                                        $equipamento->MeioPagamento &&
+                                                        $equipamento->valorTroco &&
+                                                        $equipamento->parcelaTotal &&
+                                                        $equipamento->valorParcelas &&
+                                                        $equipamento->valorPago )
+                                                        <p><span class="badge pill-badge bg-purple">Equipamento pago</span></p>
+                                                        @elseif($equipamento->valorPago)
+                                                        <p><span class="badge pill-badge bg-success">Equipamento processado</span></p>
                                                         @endif
 
                                                         <p class="text-black">{{ $equipamento->status }}</p>
@@ -439,8 +730,17 @@
                                                 <tr>
                                                     <td class="align-middle text-center" style="cursor: pointer;" onclick="window.location='{{ route('dashboard_listar_items_ordem', ['empresa'=>$empresa->name, 'id_ordem'=>$ordemServicos->id, 'id_equipamento'=>$equipamento->id]) }}';">
                                                         <strong>{{ $equipamento->equipamento }}</strong>
-                                                        @if(($equipamento->valorComDesconto == $equipamento->valorPago) && ($equipamento->valorPago > 0))
-                                                        <p><span class="badge pill-badge bg-success">Equipamento pago!</span></p>
+
+                                                        @if( $equipamento->valorComDesconto &&
+                                                        $equipamento->desconto &&
+                                                        $equipamento->MeioPagamento &&
+                                                        $equipamento->valorTroco &&
+                                                        $equipamento->parcelaTotal &&
+                                                        $equipamento->valorParcelas &&
+                                                        $equipamento->valorPago )
+                                                        <p><span class="badge pill-badge bg-purple">Equipamento pago</span></p>
+                                                        @elseif($equipamento->valorPago)
+                                                        <p><span class="badge pill-badge bg-success">Equipamento processado</span></p>
                                                         @endif
 
                                                         <p class="text-black">{{ $equipamento->status }}</p>

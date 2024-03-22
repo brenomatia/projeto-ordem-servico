@@ -58,6 +58,9 @@ Route::middleware('empresas')->group(function () {
     Route::post('/empresa/{empresa}/ordem/cadastro_equipamento', [EmpresaController::class, 'dashboard_ordem_cadastro_equipamento'])->name('dashboard_ordem_cadastro_equipamento');
     Route::get('/empresa/{empresa}/ordem/deletando_equipamento/{id}', [EmpresaController::class, 'deletando_equipamento'])->name('deletando_equipamento');
     Route::post('/empresa/{empresa}/ordem/cadastrando_ordem', [EmpresaController::class, 'dashboard_cadastrando_ordem'])->name('dashboard_cadastrando_ordem');
+
+    Route::post('/empresa/{empresa}/ordem/cancelamento/{id_ordem}', [EmpresaController::class, 'dashboard_ordem_cancelamento'])->name('dashboard_ordem_cancelamento');
+
     Route::post('/empresa/{empresa}/ordem/deletar/{id_ordem}', [EmpresaController::class, 'dashboard_ordem_deletar_registro'])->name('dashboard_ordem_deletar_registro');
     Route::get('/empresa/{empresa}/ordem/cadastrando_ordem/atualizar_status/{id_ordem}/equipamento/{id}', [EmpresaController::class, 'dashboard_ordem_atualiza_status'])->name('dashboard_ordem_atualiza_status');
     Route::get('/empresa/{empresa}/ordem/atualizar_status_select/{id_ordem}/equipamento/{id}', [EmpresaController::class, 'dashboard_ordem_atualizar_status_select'])->name('dashboard_ordem_atualizar_status_select');
@@ -93,7 +96,8 @@ Route::middleware('empresas')->group(function () {
     Route::get('/empresa/{empresa}/ordem/genProtocolo/{id_ordem}', [EmpresaController::class, 'dashboard_gen_protocolo'])->name('dashboard_gen_protocolo');
     
     Route::get('/empresa/{empresa}/vendas', [EmpresaController::class, 'dashboard_vendas'])->name('dashboard_vendas');
-    Route::post('/empresa/{empresa}/vendas/busca_produto', [EmpresaController::class, 'dashboard_vendas_busca_produto'])->name('dashboard_vendas_busca_produto');
+    Route::get('/empresa/{empresa}/vendas/get_busca_produto', [EmpresaController::class, 'dashboard_get_busca_produto'])->name('dashboard_get_busca_produto');
+
     Route::post('/empresa/{empresa}/vendas/busca_os', [EmpresaController::class, 'dashboard_vendas_busca_os'])->name('dashboard_vendas_busca_os');
     Route::post('/empresa/{empresa}/vendas/deletar_os/{id}', [EmpresaController::class, 'dashboard_vendas_deletar_os'])->name('dashboard_vendas_deletar_os');
     Route::post('/empresa/{empresa}/vendas/busca_produto', [EmpresaController::class, 'dashboard_vendas_busca_produto'])->name('dashboard_vendas_busca_produto');
