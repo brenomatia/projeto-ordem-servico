@@ -404,7 +404,7 @@ class EmpresaController extends Controller
 
         $ordemServicos = OrdemServico::paginate(10);
         $equipamentosOS = EquipamentoOS::where('id_user', Auth::user()->id)->where('listado', null)->get();
-        $equipamentosListados = EquipamentoOS::where('id_user', Auth::user()->id)->get();
+        $equipamentosListados = EquipamentoOS::all();
 
 
 
@@ -1943,7 +1943,7 @@ class EmpresaController extends Controller
         if ($ordemServicos) {
 
             $equipamentosOS = EquipamentoOS::where('id_user', Auth::user()->id)->where('listado', null)->get();
-            $equipamentosListados = EquipamentoOS::where('id_user', Auth::user()->id)->where('os_permitida', $ordemServicos->id)->get();
+            $equipamentosListados = EquipamentoOS::where('os_permitida', $ordemServicos->id)->get();
             return view('empresa.dashboard_ordem_servico_pesquisa', compact('empresa', 'ordemServicos', 'equipamentosOS', 'equipamentosListados'));
 
         } else {
@@ -2111,8 +2111,7 @@ class EmpresaController extends Controller
         $consulta_ordem = OrdemServico::find($request->id_ordem);
 
         if ($consulta_ordem) {
-            $equipamentosOS = EquipamentoOS::where('id_user', Auth::user()->id)
-                                            ->where('os_permitida', $consulta_ordem->id)
+            $equipamentosOS = EquipamentoOS::where('os_permitida', $consulta_ordem->id)
                                             ->get();
         
             if ($equipamentosOS->isNotEmpty()) {
